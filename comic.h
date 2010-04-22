@@ -8,11 +8,21 @@
 
 struct Comic
 {
-	Comic() :name(""), base_url(""), first_url(""), last_url(""), download_imgs(true),
-			img_regex(""), next_regex(""),
-			last_img(1), unread(0), read_end_url(0),
-			url_swap(""),
-			is_new_imgs(false)
+	Comic() : name(""), 
+	base_url(""), 
+	first_url(""), 
+	last_url(""), 
+	last_img(1), 
+	end_on_url(""), 
+	is_new_imgs(false), 
+	download_imgs(true), 
+	
+	imgs(0),
+	url_swap(""), 
+	url(""), 
+	unread(0), 
+	img_regex(""), 
+	next_regex("")
 	{}
 	
 	std::string name;
@@ -30,7 +40,7 @@ struct Comic
 	std::vector<std::string> imgs;
 	
 	std::string url_swap;
-	string url;
+	std::string url;
 	
 	unsigned short unread;
 	

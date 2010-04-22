@@ -54,6 +54,7 @@ void get_img(Comic &comic, char *mem)
 	if(comic.imgs.size() == 0 || comic.new_imgs.size() > 1) // cut out the duplicate that happens with each respider
 	comic.imgs.push_back(img);
 	printf("%s\n", img.c_str());
+	fflush(stdout);
 }
 
 string get_next(Comic &comic, char *mem, string url)
@@ -161,6 +162,7 @@ string get_next(Comic &comic, char *mem, string url)
 	comic.is_new_imgs = true;
 	
 	printf("%s\n", url.c_str());
+	fflush(stdout);
 	
 	return url;
 }
@@ -249,6 +251,7 @@ void download_img(Comic& comic)
 			curl_global_cleanup();
 
 			printf("%s -> %s\n", img_urls.at(j).c_str(), filename.c_str());
+			fflush(stdout);
 
 			free(page.mem);
 			page.mem=NULL;

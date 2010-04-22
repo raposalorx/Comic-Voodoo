@@ -12,7 +12,7 @@
 
 using namespace std;
 
-int main (int argc, char * const argv[]) 
+int main () // int argc, char * const argv[] 
 {
 	string folder = strcomb(2, getenv("HOME"), "/.comics");
 	string comicsfile = strcomb(2, getenv("HOME"), "/.comics/comics.yaml");

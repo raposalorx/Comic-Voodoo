@@ -85,7 +85,7 @@ void StringExplode(string str, string separator, vector<string>* results)
 	results->clear();
     int found;
     found = str.find_first_of(separator);
-    while(found != string::npos)
+    while(found != (signed) string::npos)
 	{
         if(found > 0)
 		{
