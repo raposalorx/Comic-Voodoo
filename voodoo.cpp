@@ -9,6 +9,8 @@
 #include "http.h"
 
 #include "conversion.h"
+#include "comic_globals.h"
+#include "yaml-cpp/yaml.h"
 
 using namespace std;
 
@@ -50,9 +52,14 @@ void get_img(Comic &comic, char *mem)
 		img += value += ";";
 	}
 
-	comic.new_imgs.push(img);
-	if(comic.imgs.size() == 0 || comic.new_imgs.size() > 1) // cut out the duplicate that happens with each respider
-	comic.imgs.push_back(img);
+	if(comic.imgs.size() == 0 || img!=comic.imgs.back() && comic.skipped)
+		// cut out the duplicate that happens with each respider and duplicates from reading the end_on url
+	{
+		comic.imgs.push_back(img);
+		comic.new_imgs.push(img);
+	}
+	else
+		comic.skipped = true;
 	printf("%s\n", img.c_str());
 	fflush(stdout);
 }
@@ -259,4 +266,30 @@ void download_img(Comic& comic)
 		}
 	}
 	comic.last_img++;
+}
+
+void saveImgFile(Comic& comic)
+{
+	std::fstream comics_file(strcomb(4, folder.c_str(), "/comics/", comic.name.c_str(), "/imgs.yaml"), std::ios::out|std::ios::trunc);
+	for(unsigned int i = 0; i < comic.imgs.size(); i++)
+	{
+		string s = strcomb(3, "- ", comic.imgs.at(i).c_str(), "\n");
+		comics_file.write(s.c_str(), s.size());
+	}
+	comics_file.close();
+}
+
+void saveSettingsFile(Comic &comic)
+{
+	YAML::Emitter out;
+	out << YAML::BeginMap;
+	out << YAML::Key << "last_url";
+	out << YAML::Value << comic.last_url;
+	
+	out << YAML::EndMap;
+
+	std::fstream fout(strcomb(4, folder.c_str(), "/comics/", comic.name.c_str(), "/settings.yaml"), std::ios::out|std::ios::trunc);
+	// cout << "saving: " << strcomb(4, folder.c_str(), "/comics/", comic.name.c_str(), "/settings.yaml") << endl;
+	fout.write(out.c_str(), out.size());
+	fout.close();
 }

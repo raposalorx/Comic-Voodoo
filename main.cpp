@@ -4,21 +4,91 @@
 #include <curl/curl.h>
 #include <curl/types.h>
 #include <curl/easy.h>
+#include "conversion.h"
 
 #include "voodoo.h"
-#include "conversion.h"
 #include "comic.h"
 #include "http.h"
+#include "comic_globals.h"
 
 using namespace std;
 
-int main () // int argc, char * const argv[] 
-{
-	string folder = strcomb(2, getenv("HOME"), "/.comics");
-	string comicsfile = strcomb(2, getenv("HOME"), "/.comics/comics.yaml");
-	
-	vector<Comic> comics;
+void loadComics(vector<Comic> &comics);
 
+int main (int argc, char * const argv[])
+{
+	vector<Comic> comics;
+	
+	loadComics(comics);
+	
+	if(argc>1)
+	{
+		if(!strcmp(lower(argv[1]), "fetch")) // fetch
+		{
+			if(argc>2)
+			{
+				if(!strcmp(lower(argv[2]), "all")) // fetch all
+				{
+					for(unsigned int i = 0; i < comics.size(); i++)
+					{
+						Spider(comics.at(i));
+					}
+				}
+				else // fetch specific comic
+				{
+					bool found = false;
+					for(unsigned int i = 0; i < comics.size(); i++)
+					{
+						if(!strcmp(lower(argv[2]), lower(comics.at(i).name.c_str())))
+						{
+							Spider(comics.at(i));
+							found = true;
+						}
+					}
+					if(!found)
+					{
+						cout << argv[2] << " is not a valid comic" << endl;
+					}
+				}
+			}
+			else // fetch all
+			{
+				for(unsigned int i = 0; i < comics.size(); i++)
+				{
+					Spider(comics.at(i));
+				}
+			}
+		}
+		else if(!strcmp(lower(argv[1]), "list"))
+		{	
+			for(unsigned int i = 0; i < comics.size(); i++)
+			{
+				cout << comics.at(i).name << endl;
+			}
+		}
+		else
+		{
+			cout << argv[1] << " is not a valid command" << endl;
+		}
+	}
+	
+	// save imgs file
+	for(unsigned i=0; i<comics.size(); i++)
+	{
+		saveImgFile(comics.at(i));
+	}
+	
+	// save settings file
+	for(unsigned int i = 0; i < comics.size(); i++)
+	{
+		saveSettingsFile(comics.at(i));
+	}
+	
+	return 0;
+}
+
+void loadComics(vector<Comic> &comics)
+{
 	// mk folder if it doesn't exist
 	if(chdir(folder.c_str()))
 	{
@@ -38,7 +108,7 @@ int main () // int argc, char * const argv[]
 		{
 			comics.push_back(Comic());
 			doc[i] >> comics.at(i).name;
-			cout << "loading: " << comics.at(i).name << endl;
+			// cout << "loading: " << comics.at(i).name << endl;
 
 		}
 	} 
@@ -102,6 +172,15 @@ int main () // int argc, char * const argv[]
 		}
 	}
 	
+	// save comics.yaml
+	std::fstream comics_file(comicsfile.c_str(), std::ios::out|std::ios::trunc);
+	for(unsigned int i = 0; i < comics.size(); i++)
+	{
+		string s = strcomb(3, "- ", comics.at(i).name.c_str(), "\n");
+		comics_file.write(s.c_str(), s.size());
+	}	
+	comics_file.close();
+	
 	// mk .comics/comics dir if it doesn't exist
 	if(chdir(strcomb(2, folder.c_str(), "/comics")))
 	{
@@ -161,55 +240,10 @@ int main () // int argc, char * const argv[]
 		comics.at(i).last_img = comics.at(i).imgs.size();
 	}
 	
-	// save comics.yaml
-	std::fstream comics_file(comicsfile.c_str(), std::ios::out|std::ios::trunc);
-	for(unsigned int i = 0; i < comics.size(); i++)
-	{
-		string s = strcomb(3, "- ", comics.at(i).name.c_str(), "\n");
-		comics_file.write(s.c_str(), s.size());
-	}	
-	comics_file.close();
-	
 	// set last_url if it wasn't already
 	for(unsigned int i = 0; i < comics.size(); i++)
 	{
 		if(comics.at(i).last_url == "")
 			comics.at(i).last_url = comics.at(i).first_url;
 	}
-	
-	// run the spider
-	for(unsigned int i = 0; i < comics.size(); i++)
-	{
-		Spider(comics.at(i));
-	}
-	
-	// save imgs file
-	for(unsigned i=0; i<comics.size(); i++)
-	{
-		std::fstream comics_file(strcomb(4, folder.c_str(), "/comics/", comics.at(i).name.c_str(), "/imgs.yaml"), std::ios::out|std::ios::trunc);
-		for(unsigned int ii = 0; ii < comics.at(i).imgs.size(); ii++)
-		{
-			string s = strcomb(3, "- ", comics.at(i).imgs.at(ii).c_str(), "\n");
-			comics_file.write(s.c_str(), s.size());
-		}	
-		comics_file.close();
-	}
-	
-	// save settings file
-	for(unsigned int i = 0; i < comics.size(); i++)
-	{
-		YAML::Emitter out;
-		out << YAML::BeginMap;
-		out << YAML::Key << "last_url";
-		out << YAML::Value << comics.at(i).last_url;
-		
-		out << YAML::EndMap;
-	
-		std::fstream fout(strcomb(4, folder.c_str(), "/comics/", comics.at(i).name.c_str(), "/settings.yaml"), std::ios::out|std::ios::trunc);
-		cout << "saving: " << strcomb(4, folder.c_str(), "/comics/", comics.at(i).name.c_str(), "/settings.yaml") << endl;
-		fout.write(out.c_str(), out.size());
-		fout.close();
-	}
-	
-	return 0;
 }

@@ -49,6 +49,18 @@ char* strcomb(int num, ... )
 	return combined;
 }
 
+char* lower(const char* s)
+{
+	char* n = (char*)malloc(strlen(s)+1);
+	char* r = n;
+	for(unsigned int i = 0; i < strlen(s); i++, n++)
+	{
+		*n = tolower(s[i]);
+	}
+	*n = '\0';
+	return r;
+}
+
 void reverse(char* s)
 {
     size_t c, i, j;

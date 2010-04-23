@@ -11,5 +11,7 @@ std::string get_next(Comic &comic, char *mem, std::string url);
 void Spider(Comic &comic);
 void get_http(HTTP &page, std::string url);
 void download_img(Comic& comic);
+void saveImgFile(Comic& comic);
+void saveSettingsFile(Comic &comic);
 
 #endif

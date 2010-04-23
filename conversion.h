@@ -12,5 +12,6 @@ void reverse(char* s);
 char* itoa(int n);
 void StringExplode(string str, string separator, vector<string>* results);
 bool FileExists(string strFilename);
+char* lower(const char* s);
 
 #endif
