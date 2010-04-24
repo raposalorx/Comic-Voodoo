@@ -17,12 +17,12 @@ CP = cp -f
 .SUFFIXES: .o .cpp
 
 main = comics
-cxxflags := -W -Wall -Wextra -ansi
-ldflags := -L/opt/local/lib
-libs := -lcurl -lpcrecpp -lyaml-cpp.0.2.5
-includes := -I/opt/local/include
-source := ${wildcard *.cpp}
-objects := ${source:.cpp=.o}
+cxxflags = -W -Wall -Wextra -ansi
+ldflags = -L/opt/local/lib
+libs = -lcurl -lpcrecpp -lyaml-cpp.0.2.5
+includes = -I/opt/local/include
+source := ${wildcard src/*.cpp}
+objects := ${addprefix bin/,${notdir ${source:.cpp=.o}}}
 dependencies := ${source:.cpp=.d}
 
 ##===============##
@@ -40,12 +40,12 @@ all: ${main}
 ${main}: ${objects}
 	${CXX} ${ldflags} ${includes} ${objects} -o ${main} ${libs}
 
-%.o: %.cpp
+bin/%.o: src/%.cpp
 	${CXX} -c ${cxxflags} ${includes} -MMD -o $@ $<
 
 .PHONY: clean
 clean:
-	-@${RM} ${main} *~ *.d *.o
+	-@${RM} ${main} *~ ${dependencies} ${objects}
 
 ifneq ($(MAKECMDGOALS),clean)
 -include ${dependencies}
