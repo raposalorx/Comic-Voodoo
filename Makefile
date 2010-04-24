@@ -19,7 +19,7 @@ CP = cp -f
 main = comics
 cxxflags = -W -Wall -Wextra -ansi
 ldflags = -L/opt/local/lib
-libs = -lcurl -lpcrecpp -lyaml-cpp.0.2.5
+libs = -lcurl -lpcrecpp -lyaml-cpp
 includes = -I/opt/local/include
 source := ${wildcard src/*.cpp}
 objects := ${addprefix bin/,${notdir ${source:.cpp=.o}}}
