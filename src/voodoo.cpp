@@ -52,7 +52,7 @@ void get_img(Comic &comic, char *mem)
 		img += value += ";";
 	}
 
-	if(comic.imgs.size() == 0 || img!=comic.imgs.back() && comic.skipped)
+	if(comic.imgs.size() == 0 || (img!=comic.imgs.back() && comic.skipped))
 		// cut out the duplicate that happens with each respider and duplicates from reading the end_on url
 	{
 		comic.imgs.push_back(img);

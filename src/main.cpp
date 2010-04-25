@@ -61,9 +61,68 @@ int main (int argc, char * const argv[])
 		}
 		else if(!strcmp(lower(argv[1]), "list"))
 		{	
-			for(unsigned int i = 0; i < comics.size(); i++)
+			if(argc>2)
 			{
-				cout << comics.at(i).name << endl;
+				if(!strcmp(lower(argv[2]), "all"))
+				{
+					system(strcomb(3, "ls -m ", folder.c_str(), "/config | sed -e 's/\\.yaml//g' | sed -e 's/, $//g' | sed -e 's/, /\\\n/g'"));
+				}
+				else
+				{
+					cout << argv[2] << " is not a valid command" << endl;
+				}
+			}
+			else
+			{
+				for(unsigned int i = 0; i < comics.size(); i++)
+				{
+					cout << comics.at(i).name << endl;
+				}
+			}
+		}
+		else if(!strcmp(lower(argv[1]), "add"))
+		{
+			if(argc>2)
+			{
+				// save comics.yaml
+				std::fstream comics_file(comicsfile.c_str(), std::ios::out|std::ios::trunc);
+				for(unsigned int i = 0; i < comics.size(); i++)
+				{
+					string s = strcomb(3, "- ", comics.at(i).name.c_str(), "\n");
+					comics_file.write(s.c_str(), s.size());
+				}
+				string s = strcomb(3, "- ", argv[2], "\n");
+				comics_file.write(s.c_str(), s.size());
+				comics_file.close();
+				loadComics(comics);
+			}
+			else
+			{
+				cout << "You must specify a comic to add." << endl;
+			}
+		}
+		else if(!strcmp(lower(argv[1]), "help"))
+		{
+			if(argc>2)
+			{
+				cout << "TODO!" << endl;
+			}
+			else
+			{
+				cout 
+					<< "comics COMMAND [SUBCOMMAND]\n"
+					<< "command tree is as follows:\n"
+					<< "  fetch \t-- Downloads new images from all comics\n"
+					<< "    COMIC \t-- Downloads new images from COMIC\n"
+					<< "    all \t-- Downloads new images from all comics\n"
+					<< "  list \t\t-- List the comics that are currently being followed\n"
+					<< "    all \t-- Lists all possible comics\n"
+					<< "  add\n"
+					<< "    COMIC \t-- Start following COMIC\n"
+					<< "  help \t\t-- list this page\n"
+					<< "\n"
+					<< "Example: comics fetch all\n"
+					<< endl;
 			}
 		}
 		else
@@ -89,6 +148,7 @@ int main (int argc, char * const argv[])
 
 void loadComics(vector<Comic> &comics)
 {
+	comics.clear();
 	// mk folder if it doesn't exist
 	if(chdir(folder.c_str()))
 	{
@@ -167,7 +227,7 @@ void loadComics(vector<Comic> &comics)
 	{
 		if( comics.at(i).base_url.empty() )
 		{
-			cout << "erasing: " << comics.at(i).name << endl;
+			cout << comics.at(i).name << "is an invalid comic." << endl;
 			comics.erase(comics.begin()+i);
 		}
 	}
