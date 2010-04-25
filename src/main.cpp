@@ -5,6 +5,7 @@
 #include <curl/types.h>
 #include <curl/easy.h>
 #include "conversion.h"
+#include <pcrecpp.h>
 
 #include "voodoo.h"
 #include "comic.h"
@@ -65,7 +66,7 @@ int main (int argc, char * const argv[])
 			{
 				if(!strcmp(lower(argv[2]), "all"))
 				{
-					system(strcomb(3, "ls -m ", folder.c_str(), "/config | sed -e 's/\\.yaml//g' | sed -e 's/, $//g' | sed -e 's/, /\\\n/g'"));
+					system(strcomb(3, "ls -m ", folder.c_str(), "/config | sed -e 's/\\.yaml//g' -e 's/, $//g' -e 's/, /\\\n/g'"));
 				}
 				else
 				{
@@ -255,9 +256,11 @@ void loadComics(vector<Comic> &comics)
 		{
 			cout<< "mkdir " << folder << "/comics/" << comics.at(i).name << endl;
 			string name = comics.at(i).name;
-			while(name.find(' ') != string::npos && name.at(name.find(' ')-1) != '\\')
-				name.insert(name.find(' '), 1, '\\');
-			system(strcomb(4, "mkdir ", folder.c_str(), "/comics/", name.c_str()));
+			// while(name.find(' ') != string::npos && name.at(name.find(' ')-1) != '\\')
+			// 	name.insert(name.find(' '), 1, '\\');
+			// pcrecpp::RE("(?<!\\\\) ").GlobalReplace("\\ ", &name);
+			system(strcomb(5, "mkdir \"", folder.c_str(), "/comics/", name.c_str(), "\""));
+			// cout << name << endl;
 		}
 	}
 	
