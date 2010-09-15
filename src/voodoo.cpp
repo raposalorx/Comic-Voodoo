@@ -15,20 +15,24 @@
 using std::cout;
 using std::endl;
 using std::string;
-using std::vector;
 
 void get_img(Comic &comic, const char *mem, const string url)
 {
 	const string img = get_img_urls(comic, mem);
 
-	if(comic.imgs.size() == 0 || (img!=comic.imgs.back() && comic.skipped))
+	if(comic.imgs.size() == 0 || (img!=comic.imgs.back() && img!=""))
 	{	// cut out the duplicate that happens with each respider and duplicates from reading the end_on url
 		comic.imgs.push_back(img);
 		comic.new_imgs.push(img);
 		comic.urls.push_back(url);
 	}
 	else
-		comic.skipped = true;
+	{
+		cout << "skipped" << endl
+			<< "imgs.size = " << comic.imgs.size() << endl
+			<< "img = " << img << endl
+			<< "comic.imgs.back = " << comic.imgs.back() << endl;
+	}
 
 	//DEBUG
 	printf("%s\n", img.c_str());
@@ -237,7 +241,7 @@ void download_img(Comic& comic)
 	const string folder = strcomb(2, getenv("HOME"), "/.comics");
 	
 	HTTP page;
-	vector<string> img_urls;
+	std::vector<string> img_urls;
 	StringExplode(comic.new_imgs.front(), ";", &img_urls);
 	comic.new_imgs.pop();
 	unsigned int i = comic.last_img;

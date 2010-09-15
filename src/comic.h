@@ -15,7 +15,6 @@ struct Comic
 	last_img(1),
 	end_on_url(""),
 	mark(0),
-	skipped(false),
 	is_new_imgs(false),
 	download_imgs(false),
 	imgs(0),
@@ -36,7 +35,6 @@ struct Comic
 	unsigned short read_end_url;
 	unsigned short mark;
 	
-	bool skipped;
 	bool is_new_imgs;
 	bool download_imgs;
 	
