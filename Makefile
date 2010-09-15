@@ -31,11 +31,9 @@ dependencies := ${source:.cpp=.d}
 
 .PHONY: all
 all: ${main}
-	@echo "\033[32m"
 	@echo =======================================
 	@echo ComicVoodoo has been built successfully
 	@echo =======================================
-	@echo "\033[0m"
 
 ${main}: ${objects}
 	${CXX} ${ldflags} ${includes} ${objects} -o ${main} ${libs}
@@ -45,7 +43,7 @@ bin/%.o: src/%.cpp
 
 .PHONY: clean
 clean:
-	-@${RM} ${main} *~ ${dependencies} ${objects}
+	-@${RM} ${main} *~ ${addprefix bin/,${notdir ${dependencies}}} ${objects}
 
 ifneq ($(MAKECMDGOALS),clean)
 -include ${dependencies}

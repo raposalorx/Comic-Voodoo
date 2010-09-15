@@ -2,7 +2,7 @@
 #define HTTP_H
 
 #include <cstring>
-#include <string>
+//#include <string>
 
 struct HTTP
 {

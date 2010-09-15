@@ -14,10 +14,12 @@ struct Comic
 	last_url(""),
 	last_img(1),
 	end_on_url(""),
+	mark(0),
 	skipped(false),
 	is_new_imgs(false),
-	download_imgs(true),
+	download_imgs(false),
 	imgs(0),
+	urls(0),
 	url_swap(""),
 	url(""),
 	unread(0),
@@ -32,6 +34,7 @@ struct Comic
 	unsigned short last_img;
 	std::string end_on_url;
 	unsigned short read_end_url;
+	unsigned short mark;
 	
 	bool skipped;
 	bool is_new_imgs;
@@ -39,6 +42,7 @@ struct Comic
 	
 	std::queue<std::string> new_imgs;
 	std::vector<std::string> imgs;
+	std::vector<std::string> urls;
 	
 	std::string url_swap;
 	std::string url;

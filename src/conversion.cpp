@@ -8,6 +8,9 @@
 #include <unistd.h>
 #include <sys/stat.h> 
 
+using std::string;
+using std::vector;
+
 int mygetch( ) 
 {
 	struct termios oldt,

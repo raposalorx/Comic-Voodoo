@@ -12,13 +12,32 @@
 #include "comic_globals.h"
 #include "yaml-cpp/yaml.h"
 
-using namespace std;
+using std::cout;
+using std::endl;
+using std::string;
+using std::vector;
 
-void get_img(Comic &comic, char *mem)
+void get_img(Comic &comic, const char *mem, const string url)
 {
-	string html = mem;
-	string img;
+	const string img = get_img_urls(comic, mem);
 
+	if(comic.imgs.size() == 0 || (img!=comic.imgs.back() && comic.skipped))
+	{	// cut out the duplicate that happens with each respider and duplicates from reading the end_on url
+		comic.imgs.push_back(img);
+		comic.new_imgs.push(img);
+		comic.urls.push_back(url);
+	}
+	else
+		comic.skipped = true;
+
+	//DEBUG
+	printf("%s\n", img.c_str());
+	fflush(stdout);
+}
+
+string get_img_urls(const Comic &comic, const string html)
+{
+	string img;
 	string value;
 	string found;
 	string base;
@@ -30,43 +49,33 @@ void get_img(Comic &comic, char *mem)
 		swap = found;
 		comic.img_regex.FindAndConsume(&input, &found);
 		if(found == swap)
-		break;
+			break;
 
-		if(found[0] != '/')
+		if(found[0] == '/')
+			base = comic.base_url;
+		else
 		{
 			base = comic.last_url;
 			base = base.substr(0, base.find_last_of('/')+1);
 		}
-		else
-		{
-			base = comic.base_url;
-		}
 
 		// not global
 		if(found.substr(0, 7) != "http://" && found.substr(0, 4) != "www.")
-		value = base;
+			value = base;
 		else
 			value = "";
 		value += found;
 
+		// sepparate images with ;
 		img += value += ";";
 	}
 
-	if(comic.imgs.size() == 0 || (img!=comic.imgs.back() && comic.skipped))
-		// cut out the duplicate that happens with each respider and duplicates from reading the end_on url
-	{
-		comic.imgs.push_back(img);
-		comic.new_imgs.push(img);
-	}
-	else
-		comic.skipped = true;
-	printf("%s\n", img.c_str());
-	fflush(stdout);
+	return img;
 }
 
 string get_next(Comic &comic, char *mem, string url)
 {	
-	string html = mem;
+	const string html = mem;
 	string found;
 	string base;
 	
@@ -143,7 +152,7 @@ string get_next(Comic &comic, char *mem, string url)
 				return "";
 			
 			// img on end_on_url
-			get_img(comic, page.mem);
+			get_img(comic, page.mem, url);
 			
 			// keep the url before end_on_url
 			comic.url_swap = url_swap2;
@@ -167,7 +176,8 @@ string get_next(Comic &comic, char *mem, string url)
 	
 	comic.last_url = url;
 	comic.is_new_imgs = true;
-	
+
+	//DEBUG	
 	printf("%s\n", url.c_str());
 	fflush(stdout);
 	
@@ -176,6 +186,7 @@ string get_next(Comic &comic, char *mem, string url)
 
 void Spider(Comic &comic)
 {
+	cout << "spidering " << comic.name << endl;
 	bool done = false;
 	HTTP page;
 	string next = comic.last_url;
@@ -183,7 +194,7 @@ void Spider(Comic &comic)
 	get_http(page, next);
 	while(!done && page.mem != NULL)
 	{
-		get_img(comic, page.mem);
+		get_img(comic, page.mem, next);
 		
 		next = get_next(comic, page.mem, next);
 		if(next == "")
@@ -191,18 +202,23 @@ void Spider(Comic &comic)
 		else
 			get_http(page, next);
 	}
+	cout << comic.download_imgs << endl; //DEBUG
 	while(comic.is_new_imgs && !comic.new_imgs.empty() && comic.download_imgs)
 		download_img(comic);
+	saveImgFile(comic);
+	saveUrlFile(comic);
+	saveSettingsFile(comic);
 }
 
-void get_http(HTTP &page, string url)
+void get_http(HTTP &page, const string url)
 {
-	if(page.mem != NULL) // take page.mem out behind the shed, it has been sacrificed to appease the gods of mem leaks
+	if(page.mem != NULL) // take page.mem out behind the shed, it has been sacrificed to appease the god of mem leaks
 	{
 		free(page.mem);
 		page.mem=NULL;
 		page.size = 0;
 	}
+
 	CURL *curl_handle;
 	curl_handle = curl_easy_init();
 	curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
@@ -218,10 +234,9 @@ void get_http(HTTP &page, string url)
 
 void download_img(Comic& comic)
 {
-	string folder = strcomb(2, getenv("HOME"), "/.comics");
+	const string folder = strcomb(2, getenv("HOME"), "/.comics");
 	
 	HTTP page;
-	CURL *curl_handle;
 	vector<string> img_urls;
 	StringExplode(comic.new_imgs.front(), ";", &img_urls);
 	comic.new_imgs.pop();
@@ -237,25 +252,20 @@ void download_img(Comic& comic)
 		string suffix = "";
 		if(j > 0)
 			suffix.push_back('a'+j-1);
-	
-		string filename = strcomb(7, folder.c_str(), "/comics/", comic.name.c_str(), "/",  n.c_str(), suffix.c_str(), img_urls.at(j).substr(img_urls.at(j).find_last_of('.')).c_str());
-		
+		if(chdir("/tmp/comics"))
+			system("mkdir -p /tmp/comics");
+		const string tmpfile = strcomb(7, "/tmp/comics/",  n.c_str(), suffix.c_str(), img_urls.at(j).substr(img_urls.at(j).find_last_of('.')).c_str());
+		const string filename = strcomb(7, folder.c_str(), "/comics/", comic.name.c_str(), "/",  n.c_str(), suffix.c_str(), ".png");
+
 		if(!FileExists(filename))
 		{
-			curl_handle = curl_easy_init();
-			curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
-			curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, (void *)&page);
-			curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "ComicVoodoo");
-			curl_easy_setopt(curl_handle, CURLOPT_URL, img_urls.at(j).c_str());
-
-			curl_easy_perform(curl_handle);
-
-			fstream fout(filename.c_str(), ios::out|ios::binary|ios::trunc);
+			get_http(page, img_urls.at(j));
+			
+			std::fstream fout(tmpfile.c_str(), std::ios::out|std::ios::binary|std::ios::trunc);
 			fout.write((char *)page.mem, page.size);
 			fout.close();
 
-			curl_easy_cleanup(curl_handle);
-			curl_global_cleanup();
+			system(strcomb(0, "convert ", tmpfile.c_str(), " \"", filename.c_str(), "\""));
 
 			printf("%s -> %s\n", img_urls.at(j).c_str(), filename.c_str());
 			fflush(stdout);
@@ -279,13 +289,27 @@ void saveImgFile(Comic& comic)
 	comics_file.close();
 }
 
+void saveUrlFile(Comic& comic)
+{
+	std::fstream comics_file(strcomb(4, folder.c_str(), "/comics/", comic.name.c_str(), "/urls.yaml"), std::ios::out|std::ios::trunc);
+	for(unsigned int i = 0; i < comic.urls.size(); i++)
+	{
+		string s = strcomb(3, "- ", comic.urls.at(i).c_str(), "\n");
+		comics_file.write(s.c_str(), s.size());
+	}
+	comics_file.close();
+}
+
 void saveSettingsFile(Comic &comic)
 {
 	YAML::Emitter out;
 	out << YAML::BeginMap;
 	out << YAML::Key << "last_url";
 	out << YAML::Value << comic.last_url;
-	
+	out << YAML::Key << "download_urls";
+	out << YAML::Value << comic.download_imgs;
+	out << YAML::Key << "mark";
+	out << YAML::Value << comic.mark;
 	out << YAML::EndMap;
 
 	std::fstream fout(strcomb(4, folder.c_str(), "/comics/", comic.name.c_str(), "/settings.yaml"), std::ios::out|std::ios::trunc);
