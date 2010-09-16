@@ -98,10 +98,10 @@ int main (int argc, char * const argv[])
 
 				if(argc>3) // view strips
 				{
-					const string filenum = string( // get number either from mark or from cli directly
-							(cmdcmp(argv[3], "mark")) 
+					string filenum = (cmdcmp(argv[3], "mark")) // get number either from mark or from cli directly
 							? itoa(comics.at(found).mark) 
-							: argv[3]).insert(0, 4-filenum.size(), '0');
+							: argv[3];
+					filenum.insert(0, 4-filenum.size(), '0');
 					cout << filenum << endl; //DEBUG
 					
 					if(FileExists(strcomb(6, folder.c_str(), "/comics/",  argv[2], "/", filenum.c_str(), ".png"))) // read an image file if there's a local one
@@ -120,27 +120,42 @@ int main (int argc, char * const argv[])
 			if(argc>2)
 			{
 				const size_t found = findComic(comics, argv[2]);
-				
-				if(found && argc>3) // set mark to a url for the specified comic
+				if(found)
 				{
-					HTTP page;
-
-					get_http(page, argv[3]);
-					const string imgs = get_img_urls(comics.at(found), page.mem);
-
-					cout << imgs << endl; //DEBUG
-
-					for(unsigned int i = 0; i < comics.at(found).imgs.size(); i++)
-						if(!strcmp(imgs.c_str(), comics.at(found).imgs.at(i).c_str()))
+					if(argc>3)
+					{
+						if(cmdcmp(argv[3],"new"))
 						{
-							cout << i << endl; //DEBUG
-							comics.at(found).mark = i;
+							cout << "new" << endl;
+							comics.at(found).mark = comics.at(found).imgs.size()-1;
 						}
-				}
-				else // tell the user the current value for mark for the specified comic
-				{
-					cout << comics.at(found).imgs.at(comics.at(found).mark) << endl;
-					cout << comics.at(found).mark << endl;
+						else if(cmdcmp(argv[3],"first"))
+						{
+							cout << "first" << endl;
+							comics.at(found).mark = 0;
+						}
+						else
+						{
+							HTTP page;
+
+							get_http(page, argv[3]);
+							const string imgs = get_img_urls(comics.at(found), page.mem);
+
+							cout << imgs << endl; //DEBUG
+
+							for(unsigned int i = 0; i < comics.at(found).imgs.size(); i++)
+								if(!strcmp(imgs.c_str(), comics.at(found).imgs.at(i).c_str()))
+								{
+									cout << i << endl; //DEBUG
+									comics.at(found).mark = i;
+								}
+						}
+					}
+					else // tell the user the current value for mark for the specified comic
+					{
+						cout << comics.at(found).imgs.at(comics.at(found).mark) << endl;
+						cout << comics.at(found).mark << endl;
+					}
 				}
 			}
 			else
@@ -183,13 +198,13 @@ int main (int argc, char * const argv[])
 	{
 		saveImgFile(comics.at(i));
 	}
-
+*/
 	// save settings file
 	for(unsigned int i = 0; i < comics.size(); i++)
 	{
 		saveSettingsFile(comics.at(i));
 	}
-*/
+
 	return 0;
 }
 
