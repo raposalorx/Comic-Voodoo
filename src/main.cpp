@@ -18,6 +18,26 @@ using namespace std;
 void loadSettings(Settings &settings);
 void loadComics(vector<Comic> &comics);
 
+bool cmdcmp(const string x, const string y){
+	return !strcmp(lower(x.c_str()), lower(y.c_str()));}
+
+size_t findComic(const vector<Comic> comics, const string name)
+{
+	size_t found = false;
+	for(unsigned int i = 0; i < comics.size(); i++)
+	{
+		if(cmdcmp(name, comics.at(i).name))
+		{
+			found = i;
+		}
+	}
+	if(!found)
+	{
+		cout << name << " is not a valid comic" << endl;
+	}
+	return found;
+}
+
 int main (int argc, char * const argv[])
 {
 	vector<Comic> comics;
@@ -28,174 +48,105 @@ int main (int argc, char * const argv[])
 
 	if(argc>1)
 	{
-		if(!strcmp(lower(argv[1]), "fetch")) // fetch
-		{
+		if(cmdcmp(argv[1], "fetch"))
 			if(argc>2)
-			{
-				if(!strcmp(lower(argv[2]), "all")) // fetch all
-				{
+				if(cmdcmp(argv[2], "all")) // fetch all
 					for(unsigned int i = 0; i < comics.size(); i++)
-					{
 						Spider(comics.at(i));
-					}
-				}
-				else // fetch specific comic
-				{
-					bool found = false;
-					for(unsigned int i = 0; i < comics.size(); i++)
-					{
-						if(!strcmp(lower(argv[2]), lower(comics.at(i).name.c_str())))
-						{
-							Spider(comics.at(i));
-							found = true;
-						}
-					}
-					if(!found)
-					{
-						cout << argv[2] << " is not a valid comic" << endl;
-					}
-				}
-			}
-			else // fetch all
-			{
-				for(unsigned int i = 0; i < comics.size(); i++)
-				{
+				else if(const size_t i = findComic(comics, argv[2])) // fetch comic
 					Spider(comics.at(i));
-				}
-			}
-		}
-		else if(!strcmp(lower(argv[1]), "list"))
-		{	
-			if(argc>2)
-			{
-				if(!strcmp(lower(argv[2]), "all"))
-				{
-					system(strcomb(3, "ls -m ", folder.c_str(), "/config | sed -e 's/\\.yaml//g' -e 's/, $//g' -e 's/, /\\\n/g'"));
-				}
 				else
-				{
-					cout << argv[2] << " is not a valid command" << endl;
-				}
-			}
-			else
-			{
+					cout << argv[2] << " is not a valid comic" << endl;
+			else // fetch all
 				for(unsigned int i = 0; i < comics.size(); i++)
-				{
+					Spider(comics.at(i));
+		else if(cmdcmp(argv[1], "list"))
+			if(argc>2)
+				if(cmdcmp(argv[2], "all")) // list all
+					system(strcomb(3, "ls -m ", folder.c_str(), "/config | sed -e 's/\\.yaml//g' -e 's/, $//g' -e 's/, /\\\n/g'"));
+				else if(cmdcmp(argv[2], "cur")) // list current
+					for(unsigned int i = 0; i < comics.size(); i++)
+						cout << comics.at(i).name << endl;
+				else
+					cout << argv[2] << " is not a valid command" << endl;
+			else // list current
+				for(unsigned int i = 0; i < comics.size(); i++)
 					cout << comics.at(i).name << endl;
-				}
-			}
-		}
-		else if(!strcmp(lower(argv[1]), "add"))
+		else if(cmdcmp(argv[1], "add"))
 		{
 			if(argc>2)
 			{
-				// save comics.yaml
-				std::fstream comics_file(comicsfile.c_str(), std::ios::out|std::ios::trunc);
+				std::fstream comics_file(comicsfile.c_str(), std::ios::out|std::ios::trunc); // add comic to comics list
 				for(unsigned int i = 0; i < comics.size(); i++)
 				{
-					string s = strcomb(3, "- ", comics.at(i).name.c_str(), "\n");
+					const string s = strcomb(3, "- ", comics.at(i).name.c_str(), "\n");
 					comics_file.write(s.c_str(), s.size());
 				}
-				string s = strcomb(3, "- ", argv[2], "\n");
+				const string s = strcomb(3, "- ", argv[2], "\n");
 				comics_file.write(s.c_str(), s.size());
 				comics_file.close();
-				loadComics(comics);
+				loadComics(comics); // validate and cull comics
 			}
 			else
-			{
 				cout << "You must specify a comic to add." << endl;
-			}
 		}
-		else if(!strcmp(lower(argv[1]), "view"))
+		else if(cmdcmp(argv[1], "view"))
 		{
 			if(argc>2)
 			{
-				int found = false;
-				for(unsigned int i = 0; i < comics.size(); i++)
-				{
-					if(!strcmp(lower(argv[2]), lower(comics.at(i).name.c_str())))
-					{
-						found = i;
-					}
-				}
-				if(!found)
-				{
-					cout << argv[2] << " is not a valid comic" << endl;
-				}
+				const int found = findComic(comics, argv[2]);
 
 				if(argc>3) // view strips
 				{
-					string filenum = (!strcmp(lower(argv[3]), "mark")) ? itoa(comics.at(found).mark) : argv[3];
-					cout << filenum << endl;
-					filenum.insert(0, 4-filenum.size(), '0');
-					if(FileExists(strcomb(6, folder.c_str(), "/comics/",  argv[2], "/", filenum.c_str(), ".png")))
-					{
+					const string filenum = string( // get number either from mark or from cli directly
+							(cmdcmp(argv[3], "mark")) 
+							? itoa(comics.at(found).mark) 
+							: argv[3]).insert(0, 4-filenum.size(), '0');
+					cout << filenum << endl; //DEBUG
+					
+					if(FileExists(strcomb(6, folder.c_str(), "/comics/",  argv[2], "/", filenum.c_str(), ".png"))) // read an image file if there's a local one
 						system(strcomb(6, settings.viewer.c_str(), " ", folder.c_str(), "/comics/\"",  argv[2], "\"/*"));
-					}
-					else
-					{
-						//string comiclist = comics.at(found).imgs.at(atoi(filenum.c_str()));
-						//while(comiclist.find(';') != string::npos)
-						//{
-						//	comiclist.replace(comiclist.find(';'), 1, " ");
-						//}
-						//cout << strcomb(3, settings.viewer.c_str(), " ", comiclist.c_str()) << endl;
+					else // open the comic's url in a browser
 						system(strcomb(3, settings.browser.c_str(), " ", comics.at(found).urls.at(atoi(filenum.c_str())).c_str()));
-					}
 				}
 				else
-				{
-					//system(strcomb(6, settings.viewer.c_str(), " ", folder.c_str(), "/comics/",  argv[2], "/*"));
 					cout << "You must specify what to view from this comic." << endl;
-				}
 			}
 			else
-			{
 				cout << "You must specify a comic to view." << endl;
-			}
 		}
-		else if(!strcmp(lower(argv[1]), "mark"))
+		else if(cmdcmp(argv[1], "mark"))
 		{
 			if(argc>2)
 			{
-				int found = false;
-				for(unsigned int i = 0; i < comics.size(); i++)
-				{
-					if(!strcmp(lower(argv[2]), lower(comics.at(i).name.c_str())))
-					{
-						found = i;
-					}
-				}
-				if(!found)
-				{
-					cout << argv[2] << " is not a valid comic" << endl;
-				}
-				else if(argc>3)
+				const size_t found = findComic(comics, argv[2]);
+				
+				if(found && argc>3) // set mark to a url for the specified comic
 				{
 					HTTP page;
 
 					get_http(page, argv[3]);
 					const string imgs = get_img_urls(comics.at(found), page.mem);
 
-					cout << imgs << endl;
+					cout << imgs << endl; //DEBUG
 
 					for(unsigned int i = 0; i < comics.at(found).imgs.size(); i++)
-					{
 						if(!strcmp(imgs.c_str(), comics.at(found).imgs.at(i).c_str()))
 						{
-							cout << i << endl;
+							cout << i << endl; //DEBUG
 							comics.at(found).mark = i;
 						}
-					}
 				}
-				else
+				else // tell the user the current value for mark for the specified comic
 				{
 					cout << comics.at(found).imgs.at(comics.at(found).mark) << endl;
 					cout << comics.at(found).mark << endl;
 				}
 			}
+			else
+				cout << "You must specify a comic to place the bookmark in." << endl;
 		}
-		else if(!strcmp(lower(argv[1]), "help"))
+		else if(cmdcmp(argv[1], "help"))
 		{
 			if(argc>2)
 			{
@@ -224,12 +175,10 @@ int main (int argc, char * const argv[])
 			}
 		}
 		else
-		{
-			cout << argv[1] << " is not a valid command" << endl;
-		}
+			cout << argv[1] << " is not a valid command." << endl;
 	}
 
-	// save imgs file
+/*	// save imgs file
 	for(unsigned i=0; i<comics.size(); i++)
 	{
 		saveImgFile(comics.at(i));
@@ -240,7 +189,7 @@ int main (int argc, char * const argv[])
 	{
 		saveSettingsFile(comics.at(i));
 	}
-
+*/
 	return 0;
 }
 
@@ -263,6 +212,8 @@ void loadSettings(Settings &settings)
 	{
 		cout << "config.yaml; " << e.what() << "\n";
 	}
+
+	// write the defaults to the settings file for ease of editing
 	YAML::Emitter out;
 	out << YAML::BeginMap;
 	out << YAML::Key << "viewer";
@@ -282,8 +233,8 @@ void loadComics(vector<Comic> &comics)
 	// mk folder if it doesn't exist
 	if(chdir(folder.c_str()))
 	{
-		cout<< "mkdir " << folder << endl;
-		system(strcomb(2, "mkdir ", folder.c_str()));
+		cout<< "mkdir -p " << folder << endl; //DEBUG
+		system(strcomb(2, "mkdir -p ", folder.c_str()));
 	}
 
 	// load comics.yaml
@@ -298,8 +249,6 @@ void loadComics(vector<Comic> &comics)
 		{
 			comics.push_back(Comic());
 			doc[i] >> comics.at(i).name;
-			// cout << "loading: " << comics.at(i).name << endl;
-
 		}
 	} 
 	catch(YAML::ParserException& e)
@@ -317,34 +266,32 @@ void loadComics(vector<Comic> &comics)
 
 			YAML::Node doc;    // already parsed
 			parser.GetNextDocument(doc);
-			if(const YAML::Node *pName = doc.FindValue("base_url"))
+			if(const YAML::Node *pName = doc.FindValue("base_url")) // mandatory
 				*pName >> comics.at(i).base_url;
-			if(const YAML::Node *pName = doc.FindValue("first_url"))
+			if(const YAML::Node *pName = doc.FindValue("first_url")) // mandatory
 				*pName >> comics.at(i).first_url;
-			if(const YAML::Node *pName = doc.FindValue("img_regex"))
+			else
+				comics.at(i).base_url = "";
+			if(const YAML::Node *pName = doc.FindValue("img_regex")) // mandatory
 			{
 				string img_regex;
 				*pName >> img_regex;
 				comics.at(i).img_regex = img_regex;
 			}
-			if(const YAML::Node *pName = doc.FindValue("next_regex"))
+			else
+				comics.at(i).base_url = "";
+			if(const YAML::Node *pName = doc.FindValue("next_regex")) // mandatory
 			{
 				string next_regex;
 				*pName >> next_regex;
 				comics.at(i).next_regex = next_regex;
 			}
-			// if(const YAML::Node *pName = doc.FindValue("redirect_regex"))
-			// {
-			//	string redirect_regex;
-			//	*pName >> redirect_regex;
-			//	comics.at(i).redirect_regex = redirect_regex;
-			// }
+			else
+				comics.at(i).base_url = "";
 			if(const YAML::Node *pName = doc.FindValue("end_on_url"))
 				*pName >> comics.at(i).end_on_url;
 			if(const YAML::Node *pName = doc.FindValue("read_end_url"))
 				*pName >> comics.at(i).read_end_url;
-			//if(const YAML::Node *pName = doc.FindValue("download_imgs"))
-			//	*pName >> comics.at(i).download_imgs;
 		} 
 		catch(YAML::ParserException& e)
 		{
@@ -354,13 +301,18 @@ void loadComics(vector<Comic> &comics)
 
 	// cull comics list of invalid comics
 	for(unsigned int i = 0; i < comics.size(); i++)
-	{
+		for(unsigned int ii = 0; ii < comics.size(); ii++)
+			if(i==ii)
+				continue;
+			else if(comics.at(i).name == comics.at(ii).name)
+				comics.at(ii).base_url = "";
+	for(unsigned int i = 0; i < comics.size(); i++)
 		if( comics.at(i).base_url.empty() )
 		{
 			cout << comics.at(i).name << "is an invalid comic." << endl;
 			comics.erase(comics.begin()+i);
+			i--; // make sure it doesn't skip
 		}
-	}
 
 	// save comics.yaml
 	std::fstream comics_file(comicsfile.c_str(), std::ios::out|std::ios::trunc);
@@ -372,24 +324,20 @@ void loadComics(vector<Comic> &comics)
 	comics_file.close();
 
 	// mk .comics/comics dir if it doesn't exist
-	if(chdir(strcomb(2, folder.c_str(), "/comics")))
+	/*if(chdir(strcomb(2, folder.c_str(), "/comics")))
 	{
 		cout<< "mkdir " << folder << "/comics" << endl;
 		system(strcomb(3, "mkdir ", folder.c_str(), "/comics"));
-	}
+	}*/
 
 	// mk comics/name folders if they don't exist yet
 	for(unsigned int i = 0; i < comics.size(); i++)
 	{
 		if(chdir(strcomb(3, folder.c_str(), "/comics/", comics.at(i).name.c_str())))
 		{
-			cout<< "mkdir " << folder << "/comics/" << comics.at(i).name << endl;
+			cout<< "mkdir -p " << folder << "/comics/" << comics.at(i).name << endl; //DEBUG
 			string name = comics.at(i).name;
-			// while(name.find(' ') != string::npos && name.at(name.find(' ')-1) != '\\')
-			//	name.insert(name.find(' '), 1, '\\');
-			// pcrecpp::RE("(?<!\\\\) ").GlobalReplace("\\ ", &name);
-			system(strcomb(5, "mkdir \"", folder.c_str(), "/comics/", name.c_str(), "\""));
-			// cout << name << endl;
+			system(strcomb(5, "mkdir -p \"", folder.c_str(), "/comics/", name.c_str(), "\""));
 		}
 	}
 
