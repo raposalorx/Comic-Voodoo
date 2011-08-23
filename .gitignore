@@ -1,0 +1,6 @@
+comicvoodoo
+unittest
+*.o
+*.d
+*_
+~*
