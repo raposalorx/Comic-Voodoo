@@ -8,43 +8,67 @@
 ## Settings ##
 ##==========##
 
+SHELL = /bin/sh
 CXX = g++
-SED = sed
 RM = rm -f
-MV = mv -f
-CP = cp -f
 
-.SUFFIXES: .o .cpp
+.SUFFIXES: .o .cc
 
-main = comics
-cxxflags = -W -Wall -Wextra -ansi
-ldflags = -L/opt/local/lib
-libs = -lcurl -lpcrecpp -lyaml-cpp
-includes = -I/opt/local/include
-source := ${wildcard src/*.cpp}
-objects := ${addprefix bin/,${notdir ${source:.cpp=.o}}}
-dependencies := ${source:.cpp=.d}
+main = comicvoodoo
+srcdir = ./src
+cxxflags ?= -W -Wall -Wextra -ansi -g
+ldflags ?= -L/opt/local/lib
+libs ?= -lcurl -lpcrecpp -lyaml-cpp -largtable2
+includes ?= -I/opt/local/include
+source := ${shell find ${srcdir} -name *.cc}
+objects := ${source:.cc=.o}
+dependencies := ${source:.cc=.d}
+
+test = unittest
+test_srcdir = ./test
+test_cxxflags ?= ${cxxflags}
+test_ldflags ?= ${ldflags}
+test_libs ?= ${libs} -lUnitTest++
+test_includes ?= ${includes}
+test_source := ${shell find ${test_srcdir} -name *.cc}
+test_objects := ${test_source:.cc=.o}
+test_dependencies := ${test_source:.cc=.d}
 
 ##===============##
 ## Build Targets ##
 ##===============##
 
 .PHONY: all
-all: ${main}
-	@echo =======================================
-	@echo ComicVoodoo has been built successfully
-	@echo =======================================
+all: ${test}
+	@echo ===================================
+	@echo Project has been built successfully
+	@echo ===================================
+	@./${test}
 
-${main}: ${objects}
-	${CXX} ${ldflags} ${includes} ${objects} -o ${main} ${libs}
-
-bin/%.o: src/%.cpp
-	${CXX} -c ${cxxflags} ${includes} -MMD -o $@ $<
+#.PHONY: install
+#install: ${main}
 
 .PHONY: clean
 clean:
-	-@${RM} ${main} *~ ${addprefix bin/,${notdir ${dependencies}}} ${objects}
+	-@${RM} ${main} ${test} ${objects} ${test_objects} ${dependencies} ${test_dependencies}
+
+.PHONY: linecount
+linecount:
+	-@wc -l ${shell find ${srcdir} ${test_srcdir} -regex "\.[hc]pp$$"}
+
+${main}: ${objects}
+	${CXX} ${ldflags} ${includes} ${libs} ${objects} -o ${main}
+
+${test}: ${test_objects} ${objects}
+	${CXX} ${test_ldflags} ${test_includes} ${test_libs} ${test_objects} ${filter-out ${srcdir}/main.o,${objects}} -o ${test}
+
+${srcdir}/%.o: ${srcdir}/%.cc
+	${CXX} -c ${cxxflags} ${includes} -MMD -o $@ $<
+
+${test_srcdir}/%.o: ${test_srcdir}/%.cc
+	${CXX} -c ${test_cxxflags} ${test_includes} -MMD -o $@ $<
 
 ifneq ($(MAKECMDGOALS),clean)
 -include ${dependencies}
+-include ${test_dependencies}
 endif
