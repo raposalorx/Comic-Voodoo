@@ -2,10 +2,10 @@
 
 TEST(fail)
 {
-	CHECK(false);
+    CHECK(false);
 }
 
 int main ()
 {
-	    return UnitTest::RunAllTests();
+        return UnitTest::RunAllTests();
 }

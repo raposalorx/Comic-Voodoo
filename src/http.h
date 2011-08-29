@@ -6,10 +6,10 @@
 
 struct HTTP
 {
-	HTTP() : mem(NULL), size(0)
-	{}
-  	char *mem;
-  	size_t size;
+    HTTP() : mem(NULL), size(0)
+    {}
+      char *mem;
+      size_t size;
 
 };
 

@@ -13,55 +13,55 @@ using std::vector;
 
 int mygetch( ) 
 {
-	struct termios oldt,
-		newt;
-	int            ch;
-	tcgetattr( STDIN_FILENO, &oldt );
-	newt = oldt;
-	newt.c_lflag &= ~( ICANON | ECHO );
-	tcsetattr( STDIN_FILENO, TCSANOW, &newt );
-	ch = getchar();
-	tcsetattr( STDIN_FILENO, TCSANOW, &oldt );
-	return ch;
+    struct termios oldt,
+        newt;
+    int            ch;
+    tcgetattr( STDIN_FILENO, &oldt );
+    newt = oldt;
+    newt.c_lflag &= ~( ICANON | ECHO );
+    tcsetattr( STDIN_FILENO, TCSANOW, &newt );
+    ch = getchar();
+    tcsetattr( STDIN_FILENO, TCSANOW, &oldt );
+    return ch;
 }
 
 char* strcomb(int num, ... )
 {
-	va_list ap;
-	va_start(ap, num);
-	size_t len = 0;
-	for(int i = 0; i < num; i++)
-	{
-		len += strlen(va_arg(ap, char*));
-	}
-	char* combined = (char*) malloc(len+1);
-	
-	va_end(ap);
-	va_start(ap, num);
-	len = 0;
-	
-	for(int i = 0; i < num; i++)
-	{
-		char* swap = va_arg(ap, char*);
-		strncpy(combined+len, swap, strlen(swap));
-		len += strlen(swap);
-	}
-	combined[len] = '\0';
-	
-	va_end(ap);
-	return combined;
+    va_list ap;
+    va_start(ap, num);
+    size_t len = 0;
+    for(int i = 0; i < num; i++)
+    {
+        len += strlen(va_arg(ap, char*));
+    }
+    char* combined = (char*) malloc(len+1);
+    
+    va_end(ap);
+    va_start(ap, num);
+    len = 0;
+    
+    for(int i = 0; i < num; i++)
+    {
+        char* swap = va_arg(ap, char*);
+        strncpy(combined+len, swap, strlen(swap));
+        len += strlen(swap);
+    }
+    combined[len] = '\0';
+    
+    va_end(ap);
+    return combined;
 }
 
 char* lower(const char* s)
 {
-	char* n = (char*)malloc(strlen(s)+1);
-	char* r = n;
-	for(unsigned int i = 0; i < strlen(s); i++, n++)
-	{
-		*n = tolower(s[i]);
-	}
-	*n = '\0';
-	return r;
+    char* n = (char*)malloc(strlen(s)+1);
+    char* r = n;
+    for(unsigned int i = 0; i < strlen(s); i++, n++)
+    {
+        *n = tolower(s[i]);
+    }
+    *n = '\0';
+    return r;
 }
 
 void reverse(char* s)
@@ -77,7 +77,7 @@ void reverse(char* s)
 
 char* itoa(int n)
 {
-	char* s = (char*)malloc(sizeof(int));
+    char* s = (char*)malloc(sizeof(int));
     int i, sign;
 
     if ((sign = n) < 0)  /* record sign */
@@ -91,26 +91,26 @@ char* itoa(int n)
     s[i] = '\0';
     reverse(s);
 
-	return s;
+    return s;
 }
 
 // stolen functions
 void StringExplode(string str, string separator, vector<string>* results)
 {
-	results->clear();
+    results->clear();
     int found;
     found = str.find_first_of(separator);
     while(found != (signed) string::npos)
-	{
+    {
         if(found > 0)
-		{
+        {
             results->push_back(str.substr(0,found));
         }
         str = str.substr(found+1);
         found = str.find_first_of(separator);
     }
     if(str.length() > 0)
-	{
+    {
         results->push_back(str);
     }
 }

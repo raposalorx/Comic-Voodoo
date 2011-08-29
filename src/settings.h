@@ -5,13 +5,13 @@
 
 struct Settings
 {
-	Settings() : 
-		viewer("display"),
-		browser("firefox")
-	{}
+    Settings() : 
+        viewer("display"),
+        browser("firefox")
+    {}
 
-	std::string viewer;
-	std::string browser;
+    std::string viewer;
+    std::string browser;
 
 };
 
