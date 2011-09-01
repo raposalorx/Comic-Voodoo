@@ -12,27 +12,27 @@ SHELL = /bin/sh
 CXX = g++
 RM = rm -f
 
-.SUFFIXES: .o .cc
+.SUFFIXES: .o .cpp
 
 main = comicvoodoo
 srcdir = ./src
 cxxflags ?= -W -Wall -Wextra -ansi -g
-ldflags ?= -L/opt/local/lib
+ldflags ?=
 libs ?= -lcurl -lpcrecpp -lyaml-cpp -largtable2
-includes ?= -I/opt/local/include
-source := ${shell find ${srcdir} -name *.cc}
-objects := ${source:.cc=.o}
-dependencies := ${source:.cc=.d}
+includes ?=
+source := ${shell find ${srcdir} -name *.cpp}
+objects := ${source:.cpp=.o}
+dependencies := ${source:.cpp=.d}
 
 test = unittest
 test_srcdir = ./test
 test_cxxflags ?= ${cxxflags}
 test_ldflags ?= ${ldflags}
 test_libs ?= ${libs} -lUnitTest++
-test_includes ?= ${includes}
-test_source := ${shell find ${test_srcdir} -name *.cc}
-test_objects := ${test_source:.cc=.o}
-test_dependencies := ${test_source:.cc=.d}
+test_includes ?= ${includes} -I/usr/include/unittest++
+test_source := ${shell find ${test_srcdir} -name *.cpp}
+test_objects := ${test_source:.cpp=.o}
+test_dependencies := ${test_source:.cpp=.d}
 
 ##===============##
 ## Build Targets ##
@@ -57,15 +57,15 @@ linecount:
 	-@wc -l ${shell find ${srcdir} ${test_srcdir} -regex ".*\.\(h\|cc\)$$"}
 
 ${main}: ${objects}
-	${CXX} ${ldflags} ${includes} ${libs} ${objects} -o ${main}
+	${CXX} ${ldflags} ${includes} ${objects} -o ${main} ${libs}
 
 ${test}: ${test_objects} ${objects}
-	${CXX} ${test_ldflags} ${test_includes} ${test_libs} ${test_objects} ${filter-out ${srcdir}/main.o,${objects}} -o ${test}
+	${CXX} ${test_ldflags} ${test_includes} ${test_objects} ${filter-out ${srcdir}/main.o,${objects}} -o ${test} ${test_libs}
 
-${srcdir}/%.o: ${srcdir}/%.cc
+${srcdir}/%.o: ${srcdir}/%.cpp
 	${CXX} -c ${cxxflags} ${includes} -MMD -o $@ $<
 
-${test_srcdir}/%.o: ${test_srcdir}/%.cc
+${test_srcdir}/%.o: ${test_srcdir}/%.cpp
 	${CXX} -c ${test_cxxflags} ${test_includes} -MMD -o $@ $<
 
 ifneq ($(MAKECMDGOALS),clean)
