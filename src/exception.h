@@ -18,6 +18,16 @@ class Exception: public std::exception
     std::string what_str;
 };
 
+#define EXCEPTION(name, what, args...) \
+  class name: public Exception         \
+  {                                    \
+    public:                            \
+      explicit name(args) throw():     \
+        Exception(what)                \
+      {                                \
+      }                                \
+  };
+
 #define EXCEPTION_DEF(name, args...) \
   class name: public Exception       \
   {                                  \
