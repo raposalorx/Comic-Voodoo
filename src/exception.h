@@ -21,7 +21,8 @@ class Exception: public std::exception
 #define EXCEPTION_DEF(name, args...) \
   class name: public Exception       \
   {                                  \
-    explicit name(args) throw();     \
+    public:                          \
+      explicit name(args) throw();   \
   };
 
 #define EXCEPTION_CTOR(name, what, args...) \
