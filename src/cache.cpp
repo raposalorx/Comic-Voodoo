@@ -160,6 +160,7 @@ void Cache::writeComicConfig(const std::string& comic_name, const Comic& comic) 
     SQLite3Db db(db_path, SQLITE_OPEN_READWRITE|SQLITE_OPEN_CREATE);
     // TODO - schema check
     SQLite3Stmt stmt(db, stmt_str);
+    stmt.step();
   }
   catch (SQLite3Db::E_OpenFailed e)
   { throw E_ConfigDbOpenFailed(db_path, e.what()); }
