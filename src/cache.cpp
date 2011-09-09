@@ -106,6 +106,7 @@ class SQLite3Stmt
 
 Cache::EXCEPTION_CTOR(E_ConfigDbOpenFailed, "Could not open config database file '" + config_file + "'; " + details, const std::string& config_file, const std::string& details)
 Cache::EXCEPTION_CTOR(E_ConfigDbStmtFailed, "Statement '" + statement + "' on config database failed; " + details, const std::string& statement, const std::string& details)
+Cache::EXCEPTION_CTOR(E_ConfigDbSchemaInvalid, "Config database file '" + config_file + "' has an invalid schema", const std::string& config_file);
 Cache::EXCEPTION_CTOR(E_NoComicConfigFound, "Comic '" + comic_name + "' does not exist in database" , const std::string& comic_name)
 
 

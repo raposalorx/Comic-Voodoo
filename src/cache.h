@@ -12,6 +12,7 @@ class Cache
   // Exceptions
   public:
     EXCEPTION_DEF(E_ConfigDbOpenFailed, const std::string&, const std::string&);
+    EXCEPTION_DEF(E_ConfigDbSchemaInvalid, const std::string&);
     EXCEPTION_DEF(E_ConfigDbStmtFailed, const std::string&, const std::string&);
     EXCEPTION_DEF(E_NoComicConfigFound, const std::string&);
 
