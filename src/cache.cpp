@@ -4,8 +4,8 @@
 
 #include "comic.h"
 
-#define CACHE_DB       "cache.db"
-#define CONFIG_TABLE   "comic-configs"
+#define CACHE_DB     "cache.db"
+#define CONFIG_TABLE "comic-configs"
 
 
 // --------------------------------------------------------------------------------
