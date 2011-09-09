@@ -4,16 +4,7 @@
 //  SQL
 // --------------------------------------------------------------------------------
 
-std::string Comic::getSQLColumnsStr() const throw()
-{
-  std::string str;
-  return str;
-}
-
 std::string Comic::getSQLValuesStr() const throw()
 {
-  std::string str;
-  return str;
+  return "'" + base_url + "','" + first_url + "','" + img_regex + "','" + next_regex + "'";
 }
-
-const std::string Comic::sql_select_cols = "";

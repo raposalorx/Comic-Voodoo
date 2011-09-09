@@ -7,9 +7,14 @@ class Comic
 {
   // SQL
   public:
-    std::string getSQLColumnsStr() const throw();
     std::string getSQLValuesStr() const throw();
-    static const std::string sql_select_cols;
+
+  // Values
+  public:
+    std::string base_url;
+    std::string first_url;
+    std::string img_regex;
+    std::string next_regex;
 };
 
 #endif // COMIC_H
