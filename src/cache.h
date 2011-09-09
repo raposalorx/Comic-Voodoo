@@ -39,11 +39,11 @@ class Cache
 
   // Strips
   public:
-    bool hasStrip(/* TODO */) const throw(E_CacheDbError);
+    bool hasStrip(int, const std::string&) const throw(E_CacheDbError);
     void addStrip(const Strip&) const throw(E_CacheDbError);
-    void remStrip(/* TODO */) const throw(E_CacheDbError);
-    Strip* getStrip(/* TODO */) const throw(E_CacheDbError, E_NoStripFound);
-    void updateStrip(/* TODO */ const Strip&) const throw(E_CacheDbError);
+    void remStrip(int, const std::string&) const throw(E_CacheDbError);
+    Strip* getStrip(int, const std::string&) const throw(E_CacheDbError, E_NoStripFound);
+    void updateStrip(int, const std::string&, const Strip&) const throw(E_CacheDbError);
 };
 
 #endif // CACHE_H
