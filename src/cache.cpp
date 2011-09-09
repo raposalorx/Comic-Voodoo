@@ -162,8 +162,8 @@ Comic* Cache::readComicConfig(const std::string& comic_name) const throw(E_Cache
 
   try
   {
-    SQLite3Db db(db_path, SQLITE_OPEN_READONLY);
     schemaAssert();
+    SQLite3Db db(db_path, SQLITE_OPEN_READONLY);
     SQLite3Stmt stmt(db, stmt_str);
     if (!stmt.step())
       throw E_NoComicConfigFound(comic_name);
@@ -190,8 +190,8 @@ void Cache::writeComicConfig(const std::string& comic_name, const Comic& comic) 
 
   try
   {
-    SQLite3Db db(db_path, SQLITE_OPEN_READWRITE|SQLITE_OPEN_CREATE);
     schemaAssert();
+    SQLite3Db db(db_path, SQLITE_OPEN_READWRITE|SQLITE_OPEN_CREATE);
     SQLite3Stmt stmt(db, stmt_str);
     stmt.step();
   }
