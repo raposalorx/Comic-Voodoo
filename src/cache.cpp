@@ -128,7 +128,7 @@ Cache::Cache(const std::string& cache_dir, const std::string& cache_file) throw(
 
 void Cache::createCacheDb() const throw(E_CacheDbOpenFailed, E_CacheDbStmtFailed)
 {
-  std::string configtable_stmt_str = "CREATE TABLE " CONFIG_TABLE CONFIG_SCHEMA ";";
+  const std::string& configtable_stmt_str = "CREATE TABLE " CONFIG_TABLE CONFIG_SCHEMA ";";
 
   try
   {
@@ -150,7 +150,7 @@ void Cache::createCacheDb() const throw(E_CacheDbOpenFailed, E_CacheDbStmtFailed
 
 void Cache::schemaAssert() const throw(E_CacheDbOpenFailed, E_CacheDbSchemaInvalid, E_CacheDbStmtFailed)
 {
-  std::string stmt_str = "SELECT `tbl_name`,`sql` FROM `sqlite_master`;";
+  const std::string& stmt_str = "SELECT `tbl_name`,`sql` FROM `sqlite_master`;";
   int correct_schemas = 0;
 
   try
@@ -200,7 +200,7 @@ void Cache::remComic(const std::string& comic_name) const throw(E_CacheDbOpenFai
 Comic* Cache::getComicConfig(const std::string& comic_name) const throw(E_CacheDbOpenFailed, E_CacheDbStmtFailed, E_NoComicConfigFound)
 {
   std::auto_ptr<Comic> comic(new Comic);
-  std::string stmt_str = comic->getSQLSelectStr(CONFIG_TABLE, comic_name);
+  const std::string stmt_str = comic->getSQLSelectStr(CONFIG_TABLE, comic_name);
 
   try
   {
@@ -227,7 +227,7 @@ Comic* Cache::getComicConfig(const std::string& comic_name) const throw(E_CacheD
 
 void Cache::updateComicConfig(const std::string& comic_name, const Comic& comic) const throw(E_CacheDbOpenFailed, E_CacheDbStmtFailed)
 {
-  std::string stmt_str = comic.getSQLUpdateStr(CONFIG_TABLE, comic_name);
+  const std::string stmt_str = comic.getSQLUpdateStr(CONFIG_TABLE, comic_name);
 
   try
   {
