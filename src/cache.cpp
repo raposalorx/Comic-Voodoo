@@ -166,4 +166,6 @@ void Cache::writeComicConfig(const std::string& comic_name, const Comic& comic) 
   { throw E_ConfigDbOpenFailed(db_path, e.what()); }
   catch (SQLite3Stmt::E_PrepareFailed e)
   { throw E_ConfigDbStmtFailed(stmt_str, e.what()); }
+  catch (SQLite3Stmt::E_StepFailed e)
+  { throw E_ConfigDbStmtFailed(stmt_str, e.what()); }
 }
