@@ -228,6 +228,7 @@ void Cache::createCacheDb() const throw(E_CacheDbError)
   {
     // TODO - throw exception if db file already exists
     SQLite3Db db(cache_db, SQLITE_OPEN_READWRITE|SQLITE_OPEN_CREATE);
+    SQLite3Stmt(db, "CREATE TABLE " COMIC_TABLE COMIC_SCHEMA ";").step();
     SQLite3Stmt(db, "CREATE TABLE " CONFIG_TABLE CONFIG_SCHEMA ";").step();
   }
   catch (SQLite3Db::E_OpenFailed e)
