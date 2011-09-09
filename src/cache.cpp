@@ -5,7 +5,6 @@
 #include "comic.h"
 
 #define CACHE_DB       "cache.db"
-#define COMIC_SQL_COLS "'base_url','first_url','img_regex','next_regex'"
 #define CONFIG_TABLE   "comic-configs"
 
 
@@ -126,7 +125,7 @@ Comic* Cache::readComicConfig(const std::string& comic_name) const throw(E_Confi
 {
   Comic comic;
   std::string db_path = cache_dir + '/' + CACHE_DB;
-  std::string stmt_str = "select " COMIC_SQL_COLS " from `" CONFIG_TABLE "` where `name` = `" + comic_name + "`;";
+  std::string stmt_str = comic.getSQLSelectStr(CONFIG_TABLE, comic_name);
 
   try
   {
@@ -151,10 +150,10 @@ Comic* Cache::readComicConfig(const std::string& comic_name) const throw(E_Confi
   return new Comic(comic);
 }
 
-void Cache::writeComicConfig(const Comic& comic) throw(E_ConfigDbOpenFailed, E_ConfigDbStmtFailed)
+void Cache::writeComicConfig(const std::string& comic_name, const Comic& comic) throw(E_ConfigDbOpenFailed, E_ConfigDbStmtFailed)
 {
   std::string db_path = cache_dir + '/' + CACHE_DB;
-  std::string stmt_str = "insert into `" CONFIG_TABLE "` (" COMIC_SQL_COLS ") values (" + comic.getSQLValuesStr() + ")";
+  std::string stmt_str = comic.getSQLInsertStr(CONFIG_TABLE, comic_name);
 
   try
   {

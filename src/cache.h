@@ -22,7 +22,7 @@ class Cache
   // Cache
   public:
     Comic* readComicConfig(const std::string&) const throw(E_ConfigDbOpenFailed, E_ConfigDbStmtFailed, E_NoComicConfigFound);
-    void writeComicConfig(const Comic&) throw(E_ConfigDbOpenFailed, E_ConfigDbStmtFailed);
+    void writeComicConfig(const std::string&, const Comic&) throw(E_ConfigDbOpenFailed, E_ConfigDbStmtFailed);
   private:
     const std::string cache_dir;
 };
