@@ -276,7 +276,6 @@ bool Cache::hasComic(const std::string& comic_name) const throw(E_CacheDbError)
 {
   try
   {
-    schemaAssert();
     SQLite3Db db(cache_db, SQLITE_OPEN_READONLY);
     SQLite3Stmt stmt(db, "SELECT `name` FROM `" CONFIG_TABLE "` WHERE `name`='" + comic_name + "';");
     stmt.step();
@@ -294,7 +293,6 @@ void Cache::addComic(const Comic& comic) const throw(E_CacheDbError)
 {
   try
   {
-    schemaAssert();
     SQLite3Db db(cache_db, SQLITE_OPEN_READWRITE);
     SQLite3Stmt(db, getConfigSQLInsertStr(CONFIG_TABLE, comic)).step();
   }
@@ -310,7 +308,6 @@ void Cache::remComic(const std::string& comic_name) const throw(E_CacheDbError)
 {
   try
   {
-    schemaAssert();
     SQLite3Db db(cache_db, SQLITE_OPEN_READWRITE);
     SQLite3Stmt(db, "DELETE FROM `" COMIC_TABLE "` WHERE `name`='" + comic_name + "';").step();
     SQLite3Stmt(db, "DELETE FROM `" CONFIG_TABLE "` WHERE `name`='" + comic_name + "';").step();
@@ -329,7 +326,6 @@ Comic* Cache::getComicConfig(const std::string& comic_name) const throw(E_CacheD
   {
     std::auto_ptr<Comic> comic(new Comic);
 
-    schemaAssert();
     SQLite3Db db(cache_db, SQLITE_OPEN_READONLY);
     SQLite3Stmt stmt(db, getConfigSQLSelectStr(CONFIG_TABLE, comic_name));
     if (!stmt.step())
@@ -357,7 +353,6 @@ void Cache::updateComicConfig(const std::string& comic_name, const Comic& comic)
 {
   try
   {
-    schemaAssert();
     SQLite3Db db(cache_db, SQLITE_OPEN_READWRITE);
     SQLite3Stmt(db, getConfigSQLUpdateStr(CONFIG_TABLE, comic_name, comic)).step();
   }
