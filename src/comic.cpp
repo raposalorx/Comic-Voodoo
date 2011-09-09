@@ -42,6 +42,6 @@ std::string Comic::getSQLUpdateStr(const std::string& table_name, const std::str
            "`base_url`='"   + base_url   + "',"
            "`first_url`='"  + first_url  + "',"
            "`img_regex`='"  + img_regex  + "',"
-           "`next_regex`='" + next-regex + "' "
+           "`next_regex`='" + next_regex + "' "
          "WHERE `name`='" + comic_name + "';";
 }
