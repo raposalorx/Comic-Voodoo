@@ -22,10 +22,10 @@ class Cache
 
   // Cache
   public:
-    void createCacheDb() const throw(E_CacheDbOpenFailed, E_CacheDbStmtFailed);
-    void schemaAssert() const throw(E_CacheDbOpenFailed, E_CacheDbSchemaInvalid, E_CacheDbStmtFailed);
-    Comic* readComicConfig(const std::string&) const throw(E_CacheDbOpenFailed, E_CacheDbStmtFailed, E_NoComicConfigFound);
-    void writeComicConfig(const std::string&, const Comic&) throw(E_CacheDbOpenFailed, E_CacheDbStmtFailed);
+    void createCacheDb(const std::string&) const throw(E_CacheDbOpenFailed, E_CacheDbStmtFailed);
+    void schemaAssert(const std::string&) const throw(E_CacheDbOpenFailed, E_CacheDbSchemaInvalid, E_CacheDbStmtFailed);
+    Comic* readComicConfig(const std::string&, const std::string&) const throw(E_CacheDbOpenFailed, E_CacheDbStmtFailed, E_NoComicConfigFound);
+    void writeComicConfig(const std::string&, const std::string&, const Comic&) throw(E_CacheDbOpenFailed, E_CacheDbStmtFailed);
   private:
     const std::string cache_dir;
 };
