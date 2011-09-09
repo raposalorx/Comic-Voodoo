@@ -182,7 +182,22 @@ void Cache::schemaAssert() const throw(E_CacheDbError, E_CacheDbSchemaInvalid)
 
 bool Cache::hasComic(const std::string& comic_name) const throw(E_CacheDbError)
 {
-  // TODO
+  const std::string stmt_str = "SELECT `name` FROM `" CONFIG_TABLE "` WHERE `name`='" + comic_name + "';";
+
+  try
+  {
+    schemaAssert();
+    SQLite3Db db(cache_db, SQLITE_OPEN_READONLY);
+    SQLite3Stmt stmt(db, stmt_str);
+    stmt.step();
+    return (!std::string((const char*)sqlite3_column_text(stmt, 0)).empty());
+  }
+  catch (SQLite3Db::E_OpenFailed e)
+  { throw E_CacheDbError(cache_db, e.what()); }
+  catch (SQLite3Stmt::E_PrepareFailed e)
+  { throw E_CacheDbError(cache_db, e.what()); }
+  catch (SQLite3Stmt::E_StepFailed e)
+  { throw E_CacheDbError(cache_db, e.what()); }
 }
 
 void Cache::addComic(const std::string& comic_name, const Comic& comic) const throw(E_CacheDbError)
