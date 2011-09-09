@@ -227,8 +227,7 @@ Comic* Cache::getComicConfig(const std::string& comic_name) const throw(E_CacheD
 
 void Cache::updateComicConfig(const std::string& comic_name, const Comic& comic) const throw(E_CacheDbOpenFailed, E_CacheDbStmtFailed)
 {
-  // TODO - change this to an UPDATE statement instead
-  std::string stmt_str = comic.getSQLInsertStr(CONFIG_TABLE, comic_name);
+  std::string stmt_str = comic.getSQLUpdateStr(CONFIG_TABLE, comic_name);
 
   try
   {
