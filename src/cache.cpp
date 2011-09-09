@@ -1,5 +1,6 @@
 #include "cache.h"
 
+#include <memory>
 #include <sqlite3.h>
 
 #include "comic.h"
@@ -198,8 +199,8 @@ void Cache::remComic(const std::string& comic_name) const throw(E_CacheDbOpenFai
 
 Comic* Cache::getComicConfig(const std::string& comic_name) const throw(E_CacheDbOpenFailed, E_CacheDbStmtFailed, E_NoComicConfigFound)
 {
-  Comic comic;
-  std::string stmt_str = comic.getSQLSelectStr(CONFIG_TABLE, comic_name);
+  std::auto_ptr<Comic> comic(new Comic);
+  std::string stmt_str = comic->getSQLSelectStr(CONFIG_TABLE, comic_name);
 
   try
   {
@@ -209,10 +210,10 @@ Comic* Cache::getComicConfig(const std::string& comic_name) const throw(E_CacheD
     if (!stmt.step())
       throw E_NoComicConfigFound(comic_name);
 
-    comic.base_url.assign((const char*)sqlite3_column_text(stmt, 0));
-    comic.first_url.assign((const char*)sqlite3_column_text(stmt, 1));
-    comic.img_regex.assign((const char*)sqlite3_column_text(stmt, 2));
-    comic.next_regex.assign((const char*)sqlite3_column_text(stmt, 3));
+    comic->base_url.assign((const char*)sqlite3_column_text(stmt, 0));
+    comic->first_url.assign((const char*)sqlite3_column_text(stmt, 1));
+    comic->img_regex.assign((const char*)sqlite3_column_text(stmt, 2));
+    comic->next_regex.assign((const char*)sqlite3_column_text(stmt, 3));
   }
   catch (SQLite3Db::E_OpenFailed e)
   { throw E_CacheDbOpenFailed(cache_db,  e.what()); }
@@ -221,7 +222,7 @@ Comic* Cache::getComicConfig(const std::string& comic_name) const throw(E_CacheD
   catch (SQLite3Stmt::E_StepFailed e)
   { throw E_CacheDbStmtFailed(stmt_str, e.what()); }
 
-  return new Comic(comic);
+  return comic.release();
 }
 
 void Cache::updateComicConfig(const std::string& comic_name, const Comic& comic) const throw(E_CacheDbOpenFailed, E_CacheDbStmtFailed)
