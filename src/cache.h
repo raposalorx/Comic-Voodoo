@@ -11,9 +11,9 @@ class Cache
 {
   // Exceptions
   public:
-    EXCEPTION_DEF(E_ConfigDbOpenFailed, const std::string&, const std::string&);
-    EXCEPTION_DEF(E_ConfigDbSchemaInvalid, const std::string&);
-    EXCEPTION_DEF(E_ConfigDbStmtFailed, const std::string&, const std::string&);
+    EXCEPTION_DEF(E_CacheDbOpenFailed, const std::string&, const std::string&);
+    EXCEPTION_DEF(E_CacheDbSchemaInvalid, const std::string&);
+    EXCEPTION_DEF(E_CacheDbStmtFailed, const std::string&, const std::string&);
     EXCEPTION_DEF(E_NoComicConfigFound, const std::string&);
 
   // Ctor
@@ -22,9 +22,9 @@ class Cache
 
   // Cache
   public:
-    void schemaAssert() const throw(E_ConfigDbOpenFailed, E_ConfigDbSchemaInvalid, E_ConfigDbStmtFailed);
-    Comic* readComicConfig(const std::string&) const throw(E_ConfigDbOpenFailed, E_ConfigDbStmtFailed, E_NoComicConfigFound);
-    void writeComicConfig(const std::string&, const Comic&) throw(E_ConfigDbOpenFailed, E_ConfigDbStmtFailed);
+    void schemaAssert() const throw(E_CacheDbOpenFailed, E_CacheDbSchemaInvalid, E_CacheDbStmtFailed);
+    Comic* readComicConfig(const std::string&) const throw(E_CacheDbOpenFailed, E_CacheDbStmtFailed, E_NoComicConfigFound);
+    void writeComicConfig(const std::string&, const Comic&) throw(E_CacheDbOpenFailed, E_CacheDbStmtFailed);
   private:
     const std::string cache_dir;
 };

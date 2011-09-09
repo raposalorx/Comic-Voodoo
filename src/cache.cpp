@@ -104,9 +104,9 @@ class SQLite3Stmt
 //  Exceptions
 // --------------------------------------------------------------------------------
 
-Cache::EXCEPTION_CTOR(E_ConfigDbOpenFailed, "Could not open config database file '" + config_file + "'; " + details, const std::string& config_file, const std::string& details)
-Cache::EXCEPTION_CTOR(E_ConfigDbStmtFailed, "Statement '" + statement + "' on config database failed; " + details, const std::string& statement, const std::string& details)
-Cache::EXCEPTION_CTOR(E_ConfigDbSchemaInvalid, "Config database file '" + config_file + "' has an invalid schema", const std::string& config_file);
+Cache::EXCEPTION_CTOR(E_CacheDbOpenFailed, "Could not open config database file '" + config_file + "'; " + details, const std::string& config_file, const std::string& details)
+Cache::EXCEPTION_CTOR(E_CacheDbStmtFailed, "Statement '" + statement + "' on config database failed; " + details, const std::string& statement, const std::string& details)
+Cache::EXCEPTION_CTOR(E_CacheDbSchemaInvalid, "Config database file '" + config_file + "' has an invalid schema", const std::string& config_file);
 Cache::EXCEPTION_CTOR(E_NoComicConfigFound, "Comic '" + comic_name + "' does not exist in database" , const std::string& comic_name)
 
 
@@ -124,7 +124,7 @@ Cache::Cache(const std::string& cache_dir) throw():
 //  Cache
 // --------------------------------------------------------------------------------
 
-void Cache::schemaAssert() const throw(E_ConfigDbOpenFailed, E_ConfigDbSchemaInvalid, E_ConfigDbStmtFailed)
+void Cache::schemaAssert() const throw(E_CacheDbOpenFailed, E_CacheDbSchemaInvalid, E_CacheDbStmtFailed)
 {
   std::string db_path = cache_dir + '/' + CACHE_DB;
   std::string stmt_str = "SELECT `tbl_name`,`sql` FROM `sqlite_master`;";
@@ -144,17 +144,17 @@ void Cache::schemaAssert() const throw(E_ConfigDbOpenFailed, E_ConfigDbSchemaInv
     }
   }
   catch (SQLite3Db::E_OpenFailed e)
-  { throw E_ConfigDbOpenFailed(db_path,  e.what()); }
+  { throw E_CacheDbOpenFailed(db_path,  e.what()); }
   catch (SQLite3Stmt::E_PrepareFailed e)
-  { throw E_ConfigDbStmtFailed(stmt_str, e.what()); }
+  { throw E_CacheDbStmtFailed(stmt_str, e.what()); }
   catch (SQLite3Stmt::E_StepFailed e)
-  { throw E_ConfigDbStmtFailed(stmt_str, e.what()); }
+  { throw E_CacheDbStmtFailed(stmt_str, e.what()); }
 
   if (correct_schemas < DB_TABLE_COUNT)
-    throw E_ConfigDbSchemaInvalid(CACHE_DB);
+    throw E_CacheDbSchemaInvalid(CACHE_DB);
 }
 
-Comic* Cache::readComicConfig(const std::string& comic_name) const throw(E_ConfigDbOpenFailed, E_ConfigDbStmtFailed, E_NoComicConfigFound)
+Comic* Cache::readComicConfig(const std::string& comic_name) const throw(E_CacheDbOpenFailed, E_CacheDbStmtFailed, E_NoComicConfigFound)
 {
   Comic comic;
   std::string db_path = cache_dir + '/' + CACHE_DB;
@@ -174,16 +174,16 @@ Comic* Cache::readComicConfig(const std::string& comic_name) const throw(E_Confi
     comic.next_regex.assign((const char*)sqlite3_column_text(stmt, 3));
   }
   catch (SQLite3Db::E_OpenFailed e)
-  { throw E_ConfigDbOpenFailed(db_path,  e.what()); }
+  { throw E_CacheDbOpenFailed(db_path,  e.what()); }
   catch (SQLite3Stmt::E_PrepareFailed e)
-  { throw E_ConfigDbStmtFailed(stmt_str, e.what()); }
+  { throw E_CacheDbStmtFailed(stmt_str, e.what()); }
   catch (SQLite3Stmt::E_StepFailed e)
-  { throw E_ConfigDbStmtFailed(stmt_str, e.what()); }
+  { throw E_CacheDbStmtFailed(stmt_str, e.what()); }
 
   return new Comic(comic);
 }
 
-void Cache::writeComicConfig(const std::string& comic_name, const Comic& comic) throw(E_ConfigDbOpenFailed, E_ConfigDbStmtFailed)
+void Cache::writeComicConfig(const std::string& comic_name, const Comic& comic) throw(E_CacheDbOpenFailed, E_CacheDbStmtFailed)
 {
   std::string db_path = cache_dir + '/' + CACHE_DB;
   std::string stmt_str = comic.getSQLInsertStr(CONFIG_TABLE, comic_name);
@@ -196,9 +196,9 @@ void Cache::writeComicConfig(const std::string& comic_name, const Comic& comic) 
     stmt.step();
   }
   catch (SQLite3Db::E_OpenFailed e)
-  { throw E_ConfigDbOpenFailed(db_path, e.what()); }
+  { throw E_CacheDbOpenFailed(db_path, e.what()); }
   catch (SQLite3Stmt::E_PrepareFailed e)
-  { throw E_ConfigDbStmtFailed(stmt_str, e.what()); }
+  { throw E_CacheDbStmtFailed(stmt_str, e.what()); }
   catch (SQLite3Stmt::E_StepFailed e)
-  { throw E_ConfigDbStmtFailed(stmt_str, e.what()); }
+  { throw E_CacheDbStmtFailed(stmt_str, e.what()); }
 }
