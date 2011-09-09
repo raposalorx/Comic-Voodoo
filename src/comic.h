@@ -9,6 +9,7 @@ class Comic
   public:
     std::string getSQLInsertStr(const std::string&, const std::string&) const throw();
     std::string getSQLSelectStr(const std::string&, const std::string&) const throw();
+    std::string getSQLUpdateStr(const std::string&, const std::string&) const throw();
 
   // Values
   public:
