@@ -21,6 +21,7 @@ class Cache
 
   // Cache
   public:
+    void schemaAssert() const throw(E_ConfigDbOpenFailed, E_ConfigDbSchemaInvalid, E_ConfigDbStmtFailed);
     Comic* readComicConfig(const std::string&) const throw(E_ConfigDbOpenFailed, E_ConfigDbStmtFailed, E_NoComicConfigFound);
     void writeComicConfig(const std::string&, const Comic&) throw(E_ConfigDbOpenFailed, E_ConfigDbStmtFailed);
   private:

@@ -4,8 +4,10 @@
 
 #include "comic.h"
 
-#define CACHE_DB     "cache.db"
-#define CONFIG_TABLE "comic-configs"
+#define CACHE_DB       "cache.db"
+#define CONFIG_SCHEMA  "(name text primarykey, base_url text, first_url text, img_regex text, next_regex text)"
+#define CONFIG_TABLE   "comic-configs"
+#define DB_TABLE_COUNT 1
 
 
 // --------------------------------------------------------------------------------
@@ -121,6 +123,36 @@ Cache::Cache(const std::string& cache_dir) throw():
 //  Cache
 // --------------------------------------------------------------------------------
 
+void Cache::schemaAssert() const throw(E_ConfigDbOpenFailed, E_ConfigDbSchemaInvalid, E_ConfigDbStmtFailed)
+{
+  std::string db_path = cache_dir + '/' + CACHE_DB;
+  std::string stmt_str = "SELECT `tbl_name`,`sql` FROM `sqlite_master`;";
+  int correct_schemas = 0;
+
+  try
+  {
+    SQLite3Db db(db_path, SQLITE_OPEN_READONLY);
+    SQLite3Stmt stmt(db, stmt_str);
+    while (!stmt.step())
+    {
+      if (std::string((const char*)sqlite3_column_text(stmt, 0)) == CONFIG_TABLE)
+      {
+        if (std::string((const char*)sqlite3_column_text(stmt, 1)) == "CREATE TABLE " CONFIG_TABLE CONFIG_SCHEMA)
+          correct_schemas++;
+      }
+    }
+  }
+  catch (SQLite3Db::E_OpenFailed e)
+  { throw E_ConfigDbOpenFailed(db_path,  e.what()); }
+  catch (SQLite3Stmt::E_PrepareFailed e)
+  { throw E_ConfigDbStmtFailed(stmt_str, e.what()); }
+  catch (SQLite3Stmt::E_StepFailed e)
+  { throw E_ConfigDbStmtFailed(stmt_str, e.what()); }
+
+  if (correct_schemas < DB_TABLE_COUNT)
+    throw E_ConfigDbSchemaInvalid(CACHE_DB);
+}
+
 Comic* Cache::readComicConfig(const std::string& comic_name) const throw(E_ConfigDbOpenFailed, E_ConfigDbStmtFailed, E_NoComicConfigFound)
 {
   Comic comic;
@@ -130,7 +162,7 @@ Comic* Cache::readComicConfig(const std::string& comic_name) const throw(E_Confi
   try
   {
     SQLite3Db db(db_path, SQLITE_OPEN_READONLY);
-    // TODO - schema check
+    schemaAssert();
     SQLite3Stmt stmt(db, stmt_str);
     if (!stmt.step())
       throw E_NoComicConfigFound(comic_name);
@@ -158,7 +190,7 @@ void Cache::writeComicConfig(const std::string& comic_name, const Comic& comic) 
   try
   {
     SQLite3Db db(db_path, SQLITE_OPEN_READWRITE|SQLITE_OPEN_CREATE);
-    // TODO - schema check
+    schemaAssert();
     SQLite3Stmt stmt(db, stmt_str);
     stmt.step();
   }
