@@ -124,6 +124,29 @@ Cache::Cache(const std::string& cache_dir) throw():
 //  Cache
 // --------------------------------------------------------------------------------
 
+void Cache::createCacheDb() const throw(E_CacheDbOpenFailed, E_CacheDbStmtFailed)
+{
+  std::string db_path = cache_dir + '/' + CACHE_DB;
+  std::string configtable_stmt_str = "CREATE TABLE " CONFIG_TABLE CONFIG_SCHEMA ";";
+
+  try
+  {
+    // TODO - throw exception if db file already exists
+    SQLite3Db db(db_path, SQLITE_OPEN_READWRITE|SQLITE_OPEN_CREATE);
+    try
+    {
+      SQLite3Stmt stmt(db, configtable_stmt_str);
+      stmt.step();
+    }
+    catch (SQLite3Stmt::E_PrepareFailed e)
+    { throw E_CacheDbStmtFailed(configtable_stmt_str, e.what()); }
+    catch (SQLite3Stmt::E_StepFailed e)
+    { throw E_CacheDbStmtFailed(configtable_stmt_str, e.what()); }
+  }
+  catch (SQLite3Db::E_OpenFailed e)
+  { throw E_CacheDbOpenFailed(db_path,  e.what()); }
+}
+
 void Cache::schemaAssert() const throw(E_CacheDbOpenFailed, E_CacheDbSchemaInvalid, E_CacheDbStmtFailed)
 {
   std::string db_path = cache_dir + '/' + CACHE_DB;
