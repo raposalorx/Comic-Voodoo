@@ -4,6 +4,7 @@
 
 #include "comic.h"
 
+#define CACHE_DB       "cache.db"
 #define CONFIG_SCHEMA  "(name text primarykey, base_url text, first_url text, img_regex text, next_regex text)"
 #define CONFIG_TABLE   "comic-configs"
 #define DB_TABLE_COUNT 1
@@ -113,7 +114,8 @@ Cache::EXCEPTION_CTOR(E_NoComicConfigFound, "Comic '" + comic_name + "' does not
 //  Ctor
 // --------------------------------------------------------------------------------
 
-Cache::Cache(const std::string& cache_dir) throw():
+Cache::Cache(const std::string& cache_dir, const std::string& cache_file) throw():
+  cache_db(cache_dir + '/' + cache_file),
   cache_dir(cache_dir)
 {
 }
@@ -123,14 +125,14 @@ Cache::Cache(const std::string& cache_dir) throw():
 //  Cache
 // --------------------------------------------------------------------------------
 
-void Cache::createCacheDb(const std::string& db_path) const throw(E_CacheDbOpenFailed, E_CacheDbStmtFailed)
+void Cache::createCacheDb() const throw(E_CacheDbOpenFailed, E_CacheDbStmtFailed)
 {
   std::string configtable_stmt_str = "CREATE TABLE " CONFIG_TABLE CONFIG_SCHEMA ";";
 
   try
   {
     // TODO - throw exception if db file already exists
-    SQLite3Db db(db_path, SQLITE_OPEN_READWRITE|SQLITE_OPEN_CREATE);
+    SQLite3Db db(cache_db, SQLITE_OPEN_READWRITE|SQLITE_OPEN_CREATE);
     try
     {
       SQLite3Stmt stmt(db, configtable_stmt_str);
@@ -142,17 +144,17 @@ void Cache::createCacheDb(const std::string& db_path) const throw(E_CacheDbOpenF
     { throw E_CacheDbStmtFailed(configtable_stmt_str, e.what()); }
   }
   catch (SQLite3Db::E_OpenFailed e)
-  { throw E_CacheDbOpenFailed(db_path,  e.what()); }
+  { throw E_CacheDbOpenFailed(cache_db,  e.what()); }
 }
 
-void Cache::schemaAssert(const std::string& db_path) const throw(E_CacheDbOpenFailed, E_CacheDbSchemaInvalid, E_CacheDbStmtFailed)
+void Cache::schemaAssert() const throw(E_CacheDbOpenFailed, E_CacheDbSchemaInvalid, E_CacheDbStmtFailed)
 {
   std::string stmt_str = "SELECT `tbl_name`,`sql` FROM `sqlite_master`;";
   int correct_schemas = 0;
 
   try
   {
-    SQLite3Db db(db_path, SQLITE_OPEN_READONLY);
+    SQLite3Db db(cache_db, SQLITE_OPEN_READONLY);
     SQLite3Stmt stmt(db, stmt_str);
     while (!stmt.step())
     {
@@ -164,25 +166,25 @@ void Cache::schemaAssert(const std::string& db_path) const throw(E_CacheDbOpenFa
     }
   }
   catch (SQLite3Db::E_OpenFailed e)
-  { throw E_CacheDbOpenFailed(db_path,  e.what()); }
+  { throw E_CacheDbOpenFailed(cache_db,  e.what()); }
   catch (SQLite3Stmt::E_PrepareFailed e)
   { throw E_CacheDbStmtFailed(stmt_str, e.what()); }
   catch (SQLite3Stmt::E_StepFailed e)
   { throw E_CacheDbStmtFailed(stmt_str, e.what()); }
 
   if (correct_schemas < DB_TABLE_COUNT)
-    throw E_CacheDbSchemaInvalid(db_path);
+    throw E_CacheDbSchemaInvalid(cache_db);
 }
 
-Comic* Cache::readComicConfig(const std::string& db_path, const std::string& comic_name) const throw(E_CacheDbOpenFailed, E_CacheDbStmtFailed, E_NoComicConfigFound)
+Comic* Cache::readComicConfig(const std::string& comic_name) const throw(E_CacheDbOpenFailed, E_CacheDbStmtFailed, E_NoComicConfigFound)
 {
   Comic comic;
   std::string stmt_str = comic.getSQLSelectStr(CONFIG_TABLE, comic_name);
 
   try
   {
-    schemaAssert(db_path);
-    SQLite3Db db(db_path, SQLITE_OPEN_READONLY);
+    schemaAssert();
+    SQLite3Db db(cache_db, SQLITE_OPEN_READONLY);
     SQLite3Stmt stmt(db, stmt_str);
     if (!stmt.step())
       throw E_NoComicConfigFound(comic_name);
@@ -193,7 +195,7 @@ Comic* Cache::readComicConfig(const std::string& db_path, const std::string& com
     comic.next_regex.assign((const char*)sqlite3_column_text(stmt, 3));
   }
   catch (SQLite3Db::E_OpenFailed e)
-  { throw E_CacheDbOpenFailed(db_path,  e.what()); }
+  { throw E_CacheDbOpenFailed(cache_db,  e.what()); }
   catch (SQLite3Stmt::E_PrepareFailed e)
   { throw E_CacheDbStmtFailed(stmt_str, e.what()); }
   catch (SQLite3Stmt::E_StepFailed e)
@@ -202,19 +204,19 @@ Comic* Cache::readComicConfig(const std::string& db_path, const std::string& com
   return new Comic(comic);
 }
 
-void Cache::writeComicConfig(const std::string& db_path, const std::string& comic_name, const Comic& comic) throw(E_CacheDbOpenFailed, E_CacheDbStmtFailed)
+void Cache::writeComicConfig(const std::string& comic_name, const Comic& comic) throw(E_CacheDbOpenFailed, E_CacheDbStmtFailed)
 {
   std::string stmt_str = comic.getSQLInsertStr(CONFIG_TABLE, comic_name);
 
   try
   {
-    schemaAssert(db_path);
-    SQLite3Db db(db_path, SQLITE_OPEN_READWRITE|SQLITE_OPEN_CREATE);
+    schemaAssert();
+    SQLite3Db db(cache_db, SQLITE_OPEN_READWRITE|SQLITE_OPEN_CREATE);
     SQLite3Stmt stmt(db, stmt_str);
     stmt.step();
   }
   catch (SQLite3Db::E_OpenFailed e)
-  { throw E_CacheDbOpenFailed(db_path, e.what()); }
+  { throw E_CacheDbOpenFailed(cache_db, e.what()); }
   catch (SQLite3Stmt::E_PrepareFailed e)
   { throw E_CacheDbStmtFailed(stmt_str, e.what()); }
   catch (SQLite3Stmt::E_StepFailed e)

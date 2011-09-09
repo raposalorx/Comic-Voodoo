@@ -18,15 +18,16 @@ class Cache
 
   // Ctor
   public:
-    explicit Cache(const std::string&) throw();
+    Cache(const std::string&, const std::string&) throw();
 
   // Cache
   public:
-    void createCacheDb(const std::string&) const throw(E_CacheDbOpenFailed, E_CacheDbStmtFailed);
-    void schemaAssert(const std::string&) const throw(E_CacheDbOpenFailed, E_CacheDbSchemaInvalid, E_CacheDbStmtFailed);
-    Comic* readComicConfig(const std::string&, const std::string&) const throw(E_CacheDbOpenFailed, E_CacheDbStmtFailed, E_NoComicConfigFound);
-    void writeComicConfig(const std::string&, const std::string&, const Comic&) throw(E_CacheDbOpenFailed, E_CacheDbStmtFailed);
+    void createCacheDb() const throw(E_CacheDbOpenFailed, E_CacheDbStmtFailed);
+    void schemaAssert() const throw(E_CacheDbOpenFailed, E_CacheDbSchemaInvalid, E_CacheDbStmtFailed);
+    Comic* readComicConfig(const std::string&) const throw(E_CacheDbOpenFailed, E_CacheDbStmtFailed, E_NoComicConfigFound);
+    void writeComicConfig(const std::string&, const Comic&) throw(E_CacheDbOpenFailed, E_CacheDbStmtFailed);
   private:
+    const std::string cache_db;
     const std::string cache_dir;
 };
 
