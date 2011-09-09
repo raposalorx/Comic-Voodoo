@@ -5,10 +5,11 @@
 
 #include "comic.h"
 
-#define CACHE_DB       "cache.db"
-#define CONFIG_SCHEMA  "(name text primarykey, base_url text, first_url text, img_regex text, next_regex text)"
-#define CONFIG_TABLE   "comic-configs"
-#define DB_TABLE_COUNT 1
+#define CACHE_DB           "cache.db"
+#define COMIC_TABLE        "pages"
+#define COMIC_SCHEMA       "(`comic_name` TEXT)"
+#define CONFIG_TABLE       "configs"
+#define CONFIG_SCHEMA      "(`name` TEXT PRIMARY KEY, `base_url` TEXT, `first_url` TEXT, `img_regex` TEXT, `next_regex` TEXT)"
 
 
 // --------------------------------------------------------------------------------
@@ -150,31 +151,39 @@ void Cache::createCacheDb() const throw(E_CacheDbOpenFailed, E_CacheDbStmtFailed
 
 void Cache::schemaAssert() const throw(E_CacheDbOpenFailed, E_CacheDbSchemaInvalid, E_CacheDbStmtFailed)
 {
-  const std::string& stmt_str = "SELECT `tbl_name`,`sql` FROM `sqlite_master`;";
-  int correct_schemas = 0;
+  const std::string& comicschema_stmt_str = "SELECT `sql` FROM `sqlite_master` WHERE `tbl_name`='" COMIC_TABLE "';";
+  const std::string& configschema_stmt_str = "SELECT `sql` FROM `sqlite_master` WHERE `tbl_name`='" CONFIG_TABLE "';";
 
   try
   {
     SQLite3Db db(cache_db, SQLITE_OPEN_READONLY);
-    SQLite3Stmt stmt(db, stmt_str);
-    while (!stmt.step())
+
+    // Assert that the comics table exists and is valid
+    try
     {
-      if (std::string((const char*)sqlite3_column_text(stmt, 0)) == CONFIG_TABLE)
-      {
-        if (std::string((const char*)sqlite3_column_text(stmt, 1)) == "CREATE TABLE " CONFIG_TABLE CONFIG_SCHEMA)
-          correct_schemas++;
-      }
+      SQLite3Stmt stmt(db, comicschema_stmt_str);
+      if (!stmt.step() || std::string((const char*)sqlite3_column_text(stmt, 0)) != "CREATE TABLE " COMIC_TABLE COMIC_SCHEMA)
+        throw E_CacheDbSchemaInvalid(cache_db);
     }
+    catch (SQLite3Stmt::E_PrepareFailed e)
+    { throw E_CacheDbStmtFailed(comicschema_stmt_str, e.what()); }
+    catch (SQLite3Stmt::E_StepFailed e)
+    { throw E_CacheDbStmtFailed(comicschema_stmt_str, e.what()); }
+
+    // Assert that the config table exists and is valid
+    try
+    {
+      SQLite3Stmt stmt(db, configschema_stmt_str);
+      if (!stmt.step() || std::string((const char*)sqlite3_column_text(stmt, 0)) != "CREATE TABLE " CONFIG_TABLE CONFIG_SCHEMA)
+        throw E_CacheDbSchemaInvalid(cache_db);
+    }
+    catch (SQLite3Stmt::E_PrepareFailed e)
+    { throw E_CacheDbStmtFailed(configschema_stmt_str, e.what()); }
+    catch (SQLite3Stmt::E_StepFailed e)
+    { throw E_CacheDbStmtFailed(configschema_stmt_str, e.what()); }
   }
   catch (SQLite3Db::E_OpenFailed e)
   { throw E_CacheDbOpenFailed(cache_db,  e.what()); }
-  catch (SQLite3Stmt::E_PrepareFailed e)
-  { throw E_CacheDbStmtFailed(stmt_str, e.what()); }
-  catch (SQLite3Stmt::E_StepFailed e)
-  { throw E_CacheDbStmtFailed(stmt_str, e.what()); }
-
-  if (correct_schemas < DB_TABLE_COUNT)
-    throw E_CacheDbSchemaInvalid(cache_db);
 }
 
 
