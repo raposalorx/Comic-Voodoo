@@ -176,7 +176,27 @@ void Cache::schemaAssert() const throw(E_CacheDbOpenFailed, E_CacheDbSchemaInval
     throw E_CacheDbSchemaInvalid(cache_db);
 }
 
-Comic* Cache::readComicConfig(const std::string& comic_name) const throw(E_CacheDbOpenFailed, E_CacheDbStmtFailed, E_NoComicConfigFound)
+
+// --------------------------------------------------------------------------------
+//  Comics
+// --------------------------------------------------------------------------------
+
+bool Cache::hasComic(const std::string& comic_name) const throw(E_CacheDbOpenFailed, E_CacheDbStmtFailed)
+{
+  // TODO
+}
+
+void Cache::addComic(const std::string& comic_name, const Comic& comic) const throw(E_CacheDbOpenFailed, E_CacheDbStmtFailed)
+{
+  // TODO
+}
+
+void Cache::remComic(const std::string& comic_name) const throw(E_CacheDbOpenFailed, E_CacheDbStmtFailed)
+{
+  // TODO
+}
+
+Comic* Cache::getComicConfig(const std::string& comic_name) const throw(E_CacheDbOpenFailed, E_CacheDbStmtFailed, E_NoComicConfigFound)
 {
   Comic comic;
   std::string stmt_str = comic.getSQLSelectStr(CONFIG_TABLE, comic_name);
@@ -204,8 +224,9 @@ Comic* Cache::readComicConfig(const std::string& comic_name) const throw(E_Cache
   return new Comic(comic);
 }
 
-void Cache::writeComicConfig(const std::string& comic_name, const Comic& comic) throw(E_CacheDbOpenFailed, E_CacheDbStmtFailed)
+void Cache::updateComicConfig(const std::string& comic_name, const Comic& comic) const throw(E_CacheDbOpenFailed, E_CacheDbStmtFailed)
 {
+  // TODO - change this to an UPDATE statement instead
   std::string stmt_str = comic.getSQLInsertStr(CONFIG_TABLE, comic_name);
 
   try
