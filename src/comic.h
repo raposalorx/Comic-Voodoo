@@ -3,21 +3,13 @@
 
 #include <string>
 
-class Comic
+struct Comic
 {
-  // SQL
-  public:
-    std::string getSQLInsertStr(const std::string&, const std::string&) const throw();
-    std::string getSQLSelectStr(const std::string&, const std::string&) const throw();
-    std::string getSQLUpdateStr(const std::string&, const std::string&) const throw();
-
-  // Values
-  public:
-    std::string base_url;
-    std::string first_url;
-    std::string current_url;
-    std::string img_regex;
-    std::string next_regex;
+  std::string base_url;
+  std::string first_url;
+  std::string current_url;
+  std::string img_regex;
+  std::string next_regex;
 };
 
 #endif // COMIC_H

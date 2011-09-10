@@ -102,6 +102,57 @@ class SQLite3Stmt
 
 
 // --------------------------------------------------------------------------------
+//  Helper functions
+// --------------------------------------------------------------------------------
+
+std::string getSQLInsertStr(const Comic& comic, const std::string& table_name, const std::string& comic_name) throw()
+{
+  return "INSERT INTO `" + table_name + "` "
+         "("
+           "`name`,"
+           "`base_url`,"
+           "`first_url`,"
+           "`current_url`,"
+           "`img_regex`,"
+           "`next_regex`"
+         ") "
+         "VALUES "
+         "("
+           "'" + comic_name        + "',"
+           "'" + comic.base_url    + "',"
+           "'" + comic.first_url   + "',"
+           "'" + comic.current_url + "',"
+           "'" + comic.img_regex   + "',"
+           "'" + comic.next_regex  + "'"
+         ");";
+}
+
+std::string getSQLSelectStr(const Comic& comic, const std::string& table_name, const std::string& comic_name) throw()
+{
+  return "SELECT "
+           "`base_url`,"
+           "`first_url`,"
+           "`current_url`,"
+           "`img_regex`,"
+           "`next_regex` "
+         "FROM `" + table_name + "` "
+         "WHERE `name`='" + comic_name + "';";
+}
+
+std::string getSQLUpdateStr(const Comic& comic, const std::string& table_name, const std::string& comic_name) throw()
+{
+  return "UPDATE `" + table_name + "` "
+         "SET "
+           "`base_url`='"    + comic.base_url    + "',"
+           "`first_url`='"   + comic.first_url   + "',"
+           "`current_url`='" + comic.current_url + "',"
+           "`img_regex`='"   + comic.img_regex   + "',"
+           "`next_regex`='"  + comic.next_regex  + "' "
+         "WHERE `name`='" + comic_name + "';";
+}
+
+
+// --------------------------------------------------------------------------------
 //  Exceptions
 // --------------------------------------------------------------------------------
 
@@ -198,7 +249,7 @@ void Cache::addComic(const std::string& comic_name, const Comic& comic) const th
   {
     schemaAssert();
     SQLite3Db db(cache_db, SQLITE_OPEN_READWRITE);
-    SQLite3Stmt(db, comic.getSQLInsertStr(CONFIG_TABLE, comic_name)).step();
+    SQLite3Stmt(db, getSQLInsertStr(comic, CONFIG_TABLE, comic_name)).step();
   }
   catch (SQLite3Db::E_OpenFailed e)
   { throw E_CacheDbError(cache_db, e.what()); }
@@ -233,7 +284,7 @@ Comic* Cache::getComicConfig(const std::string& comic_name) const throw(E_CacheD
 
     schemaAssert();
     SQLite3Db db(cache_db, SQLITE_OPEN_READONLY);
-    SQLite3Stmt stmt(db, comic->getSQLSelectStr(CONFIG_TABLE, comic_name));
+    SQLite3Stmt stmt(db, getSQLSelectStr(*comic, CONFIG_TABLE, comic_name));
     if (!stmt.step())
       throw E_NoComicConfigFound(comic_name);
 
@@ -258,7 +309,7 @@ void Cache::updateComicConfig(const std::string& comic_name, const Comic& comic)
   {
     schemaAssert();
     SQLite3Db db(cache_db, SQLITE_OPEN_READWRITE);
-    SQLite3Stmt(db, comic.getSQLUpdateStr(CONFIG_TABLE, comic_name)).step();
+    SQLite3Stmt(db, getSQLUpdateStr(comic, CONFIG_TABLE, comic_name)).step();
   }
   catch (SQLite3Db::E_OpenFailed e)
   { throw E_CacheDbError(cache_db, e.what()); }
