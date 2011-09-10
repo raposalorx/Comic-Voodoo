@@ -9,7 +9,7 @@
 #define COMIC_TABLE   "comics"
 #define COMIC_SCHEMA  "(`comic_name` TEXT)"
 #define CONFIG_TABLE  "configs"
-#define CONFIG_SCHEMA "(`name` TEXT PRIMARY KEY, `base_url` TEXT, `first_url` TEXT, `current_url` TEXT, `img_regex` TEXT, `next_regex` TEXT)"
+#define CONFIG_SCHEMA "(`name` TEXT PRIMARY KEY, `base_url` TEXT, `first_url` TEXT, `current_url` TEXT, `current_id` INTEGER, `img_regex` TEXT, `next_regex` TEXT)"
 
 
 // --------------------------------------------------------------------------------
@@ -114,6 +114,7 @@ std::string getSQLInsertStr(const std::string& table_name, const Comic& comic) t
            "`base_url`,"
            "`first_url`,"
            "`current_url`,"
+           "`current_id`,"
            "`img_regex`,"
            "`next_regex`"
          ") "
@@ -123,6 +124,7 @@ std::string getSQLInsertStr(const std::string& table_name, const Comic& comic) t
            "'" + comic.base_url    + "',"
            "'" + comic.first_url   + "',"
            "'" + comic.current_url + "',"
+           "'" + ((std::stringstream&)(std::stringstream() << comic.current_id)).str()  + "',"
            "'" + comic.img_regex   + "',"
            "'" + comic.next_regex  + "'"
          ");";
@@ -135,6 +137,7 @@ std::string getSQLSelectStr(const std::string& table_name, const std::string& co
            "`base_url`,"
            "`first_url`,"
            "`current_url`,"
+           "`current_id`,"
            "`img_regex`,"
            "`next_regex` "
          "FROM `" + table_name + "` "
@@ -149,6 +152,7 @@ std::string getSQLUpdateStr(const std::string& table_name, const std::string& co
            "`base_url`='"    + comic.base_url    + "',"
            "`first_url`='"   + comic.first_url   + "',"
            "`current_url`='" + comic.current_url + "',"
+           "`current_id`='"  + ((std::stringstream&)(std::stringstream() << comic.current_id)).str() + "',"
            "`img_regex`='"   + comic.img_regex   + "',"
            "`next_regex`='"  + comic.next_regex  + "' "
          "WHERE `name`='" + comic_name + "';";
@@ -292,10 +296,13 @@ Comic* Cache::getComicConfig(const std::string& comic_name) const throw(E_CacheD
     if (!stmt.step())
       throw E_NoComicConfigFound(comic_name);
 
-    comic->base_url.assign((const char*)sqlite3_column_text(stmt, 0));
-    comic->first_url.assign((const char*)sqlite3_column_text(stmt, 1));
-    comic->img_regex.assign((const char*)sqlite3_column_text(stmt, 2));
-    comic->next_regex.assign((const char*)sqlite3_column_text(stmt, 3));
+    comic->name.assign((const char*)sqlite3_column_text(stmt, 0));
+    comic->base_url.assign((const char*)sqlite3_column_text(stmt, 1));
+    comic->first_url.assign((const char*)sqlite3_column_text(stmt, 2));
+    comic->current_url.assign((const char*)sqlite3_column_text(stmt, 3));
+    comic->current_id = sqlite3_column_int(stmt, 4);
+    comic->img_regex.assign((const char*)sqlite3_column_text(stmt, 5));
+    comic->next_regex.assign((const char*)sqlite3_column_text(stmt, 6));
 
     return comic.release();
   }

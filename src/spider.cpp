@@ -7,6 +7,7 @@
 
 Spider::Spider(const Comic& comic) throw():
   comic(comic),
+  current_id(comic.current_id),
   current_url(comic.current_url.empty() ? comic.first_url : comic.current_url)
 {
 }

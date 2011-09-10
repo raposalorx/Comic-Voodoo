@@ -9,6 +9,7 @@ struct Comic
   std::string base_url;
   std::string first_url;
   std::string current_url;
+  int current_id;
   std::string img_regex;
   std::string next_regex;
 };

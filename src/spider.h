@@ -18,6 +18,7 @@ class Spider
     const std::string& getCurrentURL() const throw();
   private:
     const Comic comic;
+    int current_id;
     std::string current_url;
 };
 
