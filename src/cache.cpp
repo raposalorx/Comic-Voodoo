@@ -221,7 +221,32 @@ void Cache::addComic(const std::string& comic_name, const Comic& comic) const th
 
 void Cache::remComic(const std::string& comic_name) const throw(E_CacheDbError)
 {
-  // TODO
+  const std::string comicstable_stmt_str = "DELETE FROM `" COMIC_TABLE "` WHERE `name`='" + comic_name + "';";
+  const std::string configtable_stmt_str = "DELETE FROM `" CONFIG_TABLE "` WHERE `name`='" + comic_name + "';";
+
+  try
+  {
+    schemaAssert();
+    SQLite3Db db(cache_db, SQLITE_OPEN_READWRITE);
+
+    // Remove the comics table entries
+    {
+      SQLite3Stmt stmt(db, comicstable_stmt_str);
+      stmt.step();
+    }
+
+    // Remove the config table entry
+    {
+      SQLite3Stmt stmt(db, configtable_stmt_str);
+      stmt.step();
+    }
+  }
+  catch (SQLite3Db::E_OpenFailed e)
+  { throw E_CacheDbError(cache_db, e.what()); }
+  catch (SQLite3Stmt::E_PrepareFailed e)
+  { throw E_CacheDbError(cache_db, e.what()); }
+  catch (SQLite3Stmt::E_StepFailed e)
+  { throw E_CacheDbError(cache_db, e.what()); }
 }
 
 Comic* Cache::getComicConfig(const std::string& comic_name) const throw(E_CacheDbError, E_NoComicConfigFound)
