@@ -202,7 +202,21 @@ bool Cache::hasComic(const std::string& comic_name) const throw(E_CacheDbError)
 
 void Cache::addComic(const std::string& comic_name, const Comic& comic) const throw(E_CacheDbError)
 {
-  // TODO
+  const std::string stmt_str = comic.getSQLInsertStr(CONFIG_TABLE, comic_name);
+
+  try
+  {
+    schemaAssert();
+    SQLite3Db db(cache_db, SQLITE_OPEN_READWRITE);
+    SQLite3Stmt stmt(db, stmt_str);
+    stmt.step();
+  }
+  catch (SQLite3Db::E_OpenFailed e)
+  { throw E_CacheDbError(cache_db, e.what()); }
+  catch (SQLite3Stmt::E_PrepareFailed e)
+  { throw E_CacheDbError(cache_db, e.what()); }
+  catch (SQLite3Stmt::E_StepFailed e)
+  { throw E_CacheDbError(cache_db, e.what()); }
 }
 
 void Cache::remComic(const std::string& comic_name) const throw(E_CacheDbError)
