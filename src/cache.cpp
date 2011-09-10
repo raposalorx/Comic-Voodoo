@@ -320,3 +320,35 @@ void Cache::updateComicConfig(const std::string& comic_name, const Comic& comic)
   catch (SQLite3Stmt::E_StepFailed e)
   { throw E_CacheDbError(cache_db, e.what()); }
 }
+
+
+// --------------------------------------------------------------------------------
+//  Strips
+// --------------------------------------------------------------------------------
+
+bool Cache::hasStrip(/* TODO */) const throw(E_CacheDbError)
+{
+  // TODO
+  return false;
+}
+
+void Cache::addStrip(const Strip& strip) const throw(E_CacheDbError)
+{
+  // TODO
+}
+
+void Cache::remStrip(/* TODO */) const throw(E_CacheDbError)
+{
+  // TODO
+}
+
+Strip* Cache::getStrip(/* TODO */) const throw(E_CacheDbError, E_NoStripFound)
+{
+  // TODO
+  return NULL;
+}
+
+void Cache::updateStrip(/* TODO */ const Strip& strip) const throw(E_CacheDbError, E_NoStripFound)
+{
+  // TODO
+}
