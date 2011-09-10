@@ -54,7 +54,7 @@ clean:
 
 .PHONY: linecount
 linecount:
-	-@wc -l ${shell find ${srcdir} ${test_srcdir} -regex ".*\.\(h\|cc\)$$"}
+	-@wc -l ${shell find ${srcdir} ${test_srcdir} -regex ".*\.\(h\|cpp\)$$"}
 
 ${main}: ${objects}
 	${CXX} ${ldflags} ${includes} ${objects} -o ${main} ${libs}
