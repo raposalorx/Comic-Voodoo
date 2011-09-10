@@ -371,27 +371,86 @@ void Cache::updateComicConfig(const std::string& comic_name, const Comic& comic)
 
 bool Cache::hasStrip(int id, const std::string& comic_name) const throw(E_CacheDbError)
 {
-  // TODO
-  return false;
+  try
+  {
+    SQLite3Db db(cache_db, SQLITE_OPEN_READONLY);
+    SQLite3Stmt stmt(db, "SELECT 1 FROM `" COMIC_TABLE "` WHERE `id`=" + intToString(id) + " AND `comic_name`='" + comic_name + "';");
+    stmt.step();
+    return (!std::string((const char*)sqlite3_column_text(stmt, 0)).empty());
+  }
+  catch (SQLite3Db::E_OpenFailed e)
+  { throw E_CacheDbError(cache_db, e.what()); }
+  catch (SQLite3Stmt::E_PrepareFailed e)
+  { throw E_CacheDbError(cache_db, e.what()); }
+  catch (SQLite3Stmt::E_StepFailed e)
+  { throw E_CacheDbError(cache_db, e.what()); }
 }
 
 void Cache::addStrip(const Strip& strip) const throw(E_CacheDbError)
 {
-  // TODO
+  try
+  {
+    SQLite3Db db(cache_db, SQLITE_OPEN_READWRITE);
+    SQLite3Stmt(db, getComicSQLInsertStr(COMIC_TABLE, strip)).step();
+  }
+  catch (SQLite3Db::E_OpenFailed e)
+  { throw E_CacheDbError(cache_db, e.what()); }
+  catch (SQLite3Stmt::E_PrepareFailed e)
+  { throw E_CacheDbError(cache_db, e.what()); }
+  catch (SQLite3Stmt::E_StepFailed e)
+  { throw E_CacheDbError(cache_db, e.what()); }
 }
 
 void Cache::remStrip(int id, const std::string& comic_name) const throw(E_CacheDbError)
 {
-  // TODO
+  try
+  {
+    SQLite3Db db(cache_db, SQLITE_OPEN_READWRITE);
+    SQLite3Stmt(db, "DELETE FROM `" COMIC_TABLE "` WHERE `id`=" + intToString(id) + " AND `comic_name`='" + comic_name + "';").step();
+  }
+  catch (SQLite3Db::E_OpenFailed e)
+  { throw E_CacheDbError(cache_db, e.what()); }
+  catch (SQLite3Stmt::E_PrepareFailed e)
+  { throw E_CacheDbError(cache_db, e.what()); }
+  catch (SQLite3Stmt::E_StepFailed e)
+  { throw E_CacheDbError(cache_db, e.what()); }
 }
 
 Strip* Cache::getStrip(int id, const std::string& comic_name) const throw(E_CacheDbError, E_NoStripFound)
 {
-  // TODO
-  return NULL;
+  try
+  {
+    std::auto_ptr<Strip> strip(new Strip);
+
+    SQLite3Db db(cache_db, SQLITE_OPEN_READONLY);
+    SQLite3Stmt stmt(db, getComicSQLSelectStr(COMIC_TABLE, id, comic_name));
+    if (!stmt.step())
+      throw E_NoStripFound(id, comic_name);
+
+    strip->id = sqlite3_column_int(stmt, 0);
+    strip->comic_name.assign((const char*)sqlite3_column_text(stmt, 1));
+
+    return strip.release();
+  }
+  catch (SQLite3Db::E_OpenFailed e)
+  { throw E_CacheDbError(cache_db,  e.what()); }
+  catch (SQLite3Stmt::E_PrepareFailed e)
+  { throw E_CacheDbError(cache_db, e.what()); }
+  catch (SQLite3Stmt::E_StepFailed e)
+  { throw E_CacheDbError(cache_db, e.what()); }
 }
 
 void Cache::updateStrip(int id, const std::string& comic_name, const Strip& strip) const throw(E_CacheDbError)
 {
-  // TODO
+  try
+  {
+    SQLite3Db db(cache_db, SQLITE_OPEN_READWRITE);
+    SQLite3Stmt(db, getComicSQLUpdateStr(COMIC_TABLE, id, comic_name, strip)).step();
+  }
+  catch (SQLite3Db::E_OpenFailed e)
+  { throw E_CacheDbError(cache_db, e.what()); }
+  catch (SQLite3Stmt::E_PrepareFailed e)
+  { throw E_CacheDbError(cache_db, e.what()); }
+  catch (SQLite3Stmt::E_StepFailed e)
+  { throw E_CacheDbError(cache_db, e.what()); }
 }
