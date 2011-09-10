@@ -11,13 +11,14 @@ class Spider
 {
   // Ctor
   public:
-    explicit Spider(const Comic&) throw();
+    Spider(const std::string&, const Comic&) throw();
 
   // Spidering
   public:
     Strip* fetchNextStrip() throw(/* TODO */);
     const std::string& getCurrentURL() const throw();
   private:
+    const std::string picture_dir;
     const Comic comic;
     int current_id;
     std::string current_url;

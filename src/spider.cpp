@@ -7,7 +7,8 @@
 //  Ctor
 // --------------------------------------------------------------------------------
 
-Spider::Spider(const Comic& comic) throw():
+Spider::Spider(const std::string& picture_dir, const Comic& comic) throw():
+  picture_dir(picture_dir + '/' + comic.name),
   comic(comic),
   current_id(comic.current_id),
   current_url(comic.current_url.empty() ? comic.first_url : comic.current_url)
