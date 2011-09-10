@@ -1,0 +1,19 @@
+Adding A Column To 'struct Comic'
+=================================
+1. Add the member to struct Comic in src/comic.h
+2. Add member to #define CONFIG_SCHEMA at the top of src/cache.cpp
+3. Add handling of the member in these helper functions in src/cache.cpp:
+  getConfigSQLInsertStr()
+  getConfigSQLSelectStr()
+  getConfigSQLUpdateStr()
+4. Add handling of the member to the method Cache::getComicConfig() in src/cache.cpp
+
+Adding A Column To 'struct Strip'
+=================================
+1. Add the member to struct Strip in src/strip.h
+2. Add member to #define COMIC_SCHEMA at the top of src/cache.cpp
+3. Add handling of the member in these helper functions in src/cache.cpp:
+  getComicSQLInsertStr()
+  getComicSQLSelectStr()
+  getComicSQLUpdateStr()
+4. Add handling of the member to the method Cache::getStrip() in src/cache.cpp
