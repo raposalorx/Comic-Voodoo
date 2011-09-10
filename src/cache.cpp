@@ -106,6 +106,11 @@ class SQLite3Stmt
 //  Helper functions
 // --------------------------------------------------------------------------------
 
+std::string intToString(int i) throw()
+{
+  return ((std::stringstream&)(std::stringstream() << i)).str();
+}
+
 std::string getSQLInsertStr(const std::string& table_name, const Comic& comic) throw()
 {
   return "INSERT INTO `" + table_name + "` "
@@ -120,13 +125,13 @@ std::string getSQLInsertStr(const std::string& table_name, const Comic& comic) t
          ") "
          "VALUES "
          "("
-           "'" + comic.name        + "',"
-           "'" + comic.base_url    + "',"
-           "'" + comic.first_url   + "',"
-           "'" + comic.current_url + "',"
-           "'" + ((std::stringstream&)(std::stringstream() << comic.current_id)).str()  + "',"
-           "'" + comic.img_regex   + "',"
-           "'" + comic.next_regex  + "'"
+           "'" + comic.name                    + "',"
+           "'" + comic.base_url                + "',"
+           "'" + comic.first_url               + "',"
+           "'" + comic.current_url             + "',"
+           "'" + intToString(comic.current_id) + "',"
+           "'" + comic.img_regex               + "',"
+           "'" + comic.next_regex              + "'"
          ");";
 }
 
@@ -148,13 +153,13 @@ std::string getSQLUpdateStr(const std::string& table_name, const std::string& co
 {
   return "UPDATE `" + table_name + "` "
          "SET "
-           "`name`='"        + comic.name        + "',"
-           "`base_url`='"    + comic.base_url    + "',"
-           "`first_url`='"   + comic.first_url   + "',"
-           "`current_url`='" + comic.current_url + "',"
-           "`current_id`='"  + ((std::stringstream&)(std::stringstream() << comic.current_id)).str() + "',"
-           "`img_regex`='"   + comic.img_regex   + "',"
-           "`next_regex`='"  + comic.next_regex  + "' "
+           "`name`='"        + comic.name                    + "',"
+           "`base_url`='"    + comic.base_url                + "',"
+           "`first_url`='"   + comic.first_url               + "',"
+           "`current_url`='" + comic.current_url             + "',"
+           "`current_id`='"  + intToString(comic.current_id) + "',"
+           "`img_regex`='"   + comic.img_regex               + "',"
+           "`next_regex`='"  + comic.next_regex              + "' "
          "WHERE `name`='" + comic_name + "';";
 }
 
@@ -166,7 +171,7 @@ std::string getSQLUpdateStr(const std::string& table_name, const std::string& co
 Cache::EXCEPTION_CTOR(E_CacheDbError, "Error while accessing the database file '" + config_file + "'; " + details, const std::string& config_file, const std::string& details)
 Cache::EXCEPTION_CTOR(E_CacheDbSchemaInvalid, "Config database file '" + config_file + "' has an invalid schema", const std::string& config_file);
 Cache::EXCEPTION_CTOR(E_NoComicConfigFound, "Comic '" + comic_name + "' does not exist in database" , const std::string& comic_name)
-Cache::EXCEPTION_CTOR(E_NoStripFound, "Strip #" + ((std::stringstream&)(std::stringstream() << strip_id)).str() + " from comic '" + comic_name + "' does not exist in database" , const std::string& comic_name, int strip_id)
+Cache::EXCEPTION_CTOR(E_NoStripFound, "Strip #" + intToString(strip_id) + " from comic '" + comic_name + "' does not exist in database" , const std::string& comic_name, int strip_id)
 
 
 // --------------------------------------------------------------------------------
@@ -357,7 +362,7 @@ Strip* Cache::getStrip(/* TODO */) const throw(E_CacheDbError, E_NoStripFound)
   return NULL;
 }
 
-void Cache::updateStrip(/* TODO */ const Strip& strip) const throw(E_CacheDbError)
+void Cache::updateStrip(/* TODO */s const Strip& strip) const throw(E_CacheDbError)
 {
   // TODO
 }
