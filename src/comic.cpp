@@ -11,16 +11,18 @@ std::string Comic::getSQLInsertStr(const std::string& table_name, const std::str
            "`name`,"
            "`base_url`,"
            "`first_url`,"
+           "`current_url`,"
            "`img_regex`,"
            "`next_regex`"
          ") "
          "VALUES "
          "("
-           "'" + comic_name + "',"
-           "'" + base_url   + "',"
-           "'" + first_url  + "',"
-           "'" + img_regex  + "',"
-           "'" + next_regex + "'"
+           "'" + comic_name  + "',"
+           "'" + base_url    + "',"
+           "'" + first_url   + "',"
+           "'" + current_url + "',"
+           "'" + img_regex   + "',"
+           "'" + next_regex  + "'"
          ");";
 }
 
@@ -29,6 +31,7 @@ std::string Comic::getSQLSelectStr(const std::string& table_name, const std::str
   return "SELECT "
            "`base_url`,"
            "`first_url`,"
+           "`current_url`,"
            "`img_regex`,"
            "`next_regex` "
          "FROM `" + table_name + "` "
@@ -39,9 +42,10 @@ std::string Comic::getSQLUpdateStr(const std::string& table_name, const std::str
 {
   return "UPDATE `" + table_name + "` "
          "SET "
-           "`base_url`='"   + base_url   + "',"
-           "`first_url`='"  + first_url  + "',"
-           "`img_regex`='"  + img_regex  + "',"
-           "`next_regex`='" + next_regex + "' "
+           "`base_url`='"    + base_url    + "',"
+           "`first_url`='"   + first_url   + "',"
+           "`current_url`='" + current_url + "',"
+           "`img_regex`='"   + img_regex   + "',"
+           "`next_regex`='"  + next_regex  + "' "
          "WHERE `name`='" + comic_name + "';";
 }

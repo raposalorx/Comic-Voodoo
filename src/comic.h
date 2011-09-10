@@ -15,6 +15,7 @@ class Comic
   public:
     std::string base_url;
     std::string first_url;
+    std::string current_url;
     std::string img_regex;
     std::string next_regex;
 };
