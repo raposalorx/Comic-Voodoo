@@ -1,8 +1,12 @@
 #ifndef STRIP_H
 #define STRIP_H
 
-class Strip
+#include <string>
+
+struct Strip
 {
+  int id;
+  std::string comic_name;
 };
 
 #endif // STRIP_H
