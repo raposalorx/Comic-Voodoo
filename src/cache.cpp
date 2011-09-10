@@ -395,7 +395,7 @@ Strip* Cache::getStrip(/* TODO */) const throw(E_CacheDbError, E_NoStripFound)
   return NULL;
 }
 
-void Cache::updateStrip(/* TODO */s const Strip& strip) const throw(E_CacheDbError)
+void Cache::updateStrip(/* TODO */ const Strip& strip) const throw(E_CacheDbError)
 {
   // TODO
 }
