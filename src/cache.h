@@ -43,7 +43,7 @@ class Cache
     void addStrip(const Strip&) const throw(E_CacheDbError);
     void remStrip(/* TODO */) const throw(E_CacheDbError);
     Strip* getStrip(/* TODO */) const throw(E_CacheDbError, E_NoStripFound);
-    void updateStrip(/* TODO */ const Strip&) const throw(E_CacheDbError, E_NoStripFound);
+    void updateStrip(/* TODO */ const Strip&) const throw(E_CacheDbError);
 };
 
 #endif // CACHE_H
