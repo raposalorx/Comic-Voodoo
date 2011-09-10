@@ -5,7 +5,7 @@
 
 #include "comic.h"
 
-#define COMIC_TABLE   "pages"
+#define COMIC_TABLE   "comics"
 #define COMIC_SCHEMA  "(`comic_name` TEXT)"
 #define CONFIG_TABLE  "configs"
 #define CONFIG_SCHEMA "(`name` TEXT PRIMARY KEY, `base_url` TEXT, `first_url` TEXT, `img_regex` TEXT, `next_regex` TEXT)"
