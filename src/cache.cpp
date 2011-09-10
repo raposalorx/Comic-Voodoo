@@ -111,7 +111,7 @@ std::string intToString(int i) throw()
   return ((std::stringstream&)(std::stringstream() << i)).str();
 }
 
-std::string getSQLInsertStr(const std::string& table_name, const Comic& comic) throw()
+std::string getConfigSQLInsertStr(const std::string& table_name, const Comic& comic) throw()
 {
   return "INSERT INTO `" + table_name + "` "
          "("
@@ -135,7 +135,7 @@ std::string getSQLInsertStr(const std::string& table_name, const Comic& comic) t
          ");";
 }
 
-std::string getSQLSelectStr(const std::string& table_name, const std::string& comic_name) throw()
+std::string getConfigSQLSelectStr(const std::string& table_name, const std::string& comic_name) throw()
 {
   return "SELECT "
            "`name`,"
@@ -149,7 +149,7 @@ std::string getSQLSelectStr(const std::string& table_name, const std::string& co
          "WHERE `name`='" + comic_name + "';";
 }
 
-std::string getSQLUpdateStr(const std::string& table_name, const std::string& comic_name, const Comic& comic) throw()
+std::string getConfigSQLUpdateStr(const std::string& table_name, const std::string& comic_name, const Comic& comic) throw()
 {
   return "UPDATE `" + table_name + "` "
          "SET "
@@ -262,7 +262,7 @@ void Cache::addComic(const Comic& comic) const throw(E_CacheDbError)
   {
     schemaAssert();
     SQLite3Db db(cache_db, SQLITE_OPEN_READWRITE);
-    SQLite3Stmt(db, getSQLInsertStr(CONFIG_TABLE, comic)).step();
+    SQLite3Stmt(db, getConfigSQLInsertStr(CONFIG_TABLE, comic)).step();
   }
   catch (SQLite3Db::E_OpenFailed e)
   { throw E_CacheDbError(cache_db, e.what()); }
@@ -297,7 +297,7 @@ Comic* Cache::getComicConfig(const std::string& comic_name) const throw(E_CacheD
 
     schemaAssert();
     SQLite3Db db(cache_db, SQLITE_OPEN_READONLY);
-    SQLite3Stmt stmt(db, getSQLSelectStr(CONFIG_TABLE, comic_name));
+    SQLite3Stmt stmt(db, getConfigSQLSelectStr(CONFIG_TABLE, comic_name));
     if (!stmt.step())
       throw E_NoComicConfigFound(comic_name);
 
@@ -325,7 +325,7 @@ void Cache::updateComicConfig(const std::string& comic_name, const Comic& comic)
   {
     schemaAssert();
     SQLite3Db db(cache_db, SQLITE_OPEN_READWRITE);
-    SQLite3Stmt(db, getSQLUpdateStr(CONFIG_TABLE, comic_name, comic)).step();
+    SQLite3Stmt(db, getConfigSQLUpdateStr(CONFIG_TABLE, comic_name, comic)).step();
   }
   catch (SQLite3Db::E_OpenFailed e)
   { throw E_CacheDbError(cache_db, e.what()); }
