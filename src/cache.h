@@ -15,7 +15,7 @@ class Cache
     EXCEPTION_DEF(E_CacheDbError, const std::string&, const std::string&);
     EXCEPTION_DEF(E_CacheDbSchemaInvalid, const std::string&);
     EXCEPTION_DEF(E_NoComicConfigFound, const std::string&);
-    EXCEPTION_DEF(E_NoStripFound, const std::string&);
+    EXCEPTION_DEF(E_NoStripFound, const std::string&, int);
 
   // Ctor
   public:
