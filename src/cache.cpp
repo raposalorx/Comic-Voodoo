@@ -245,7 +245,7 @@ void Cache::updateComicConfig(const std::string& comic_name, const Comic& comic)
   try
   {
     schemaAssert();
-    SQLite3Db db(cache_db, SQLITE_OPEN_READWRITE|SQLITE_OPEN_CREATE);
+    SQLite3Db db(cache_db, SQLITE_OPEN_READWRITE);
     SQLite3Stmt stmt(db, stmt_str);
     stmt.step();
   }
