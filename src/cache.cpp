@@ -5,6 +5,7 @@
 #include <sqlite3.h>
 
 #include "comic.h"
+#include "strip.h"
 
 #define COMIC_TABLE   "comics"
 #define COMIC_SCHEMA  "(`id` INTEGER, `comic_name` TEXT)"
@@ -109,6 +110,38 @@ class SQLite3Stmt
 std::string intToString(int i) throw()
 {
   return ((std::stringstream&)(std::stringstream() << i)).str();
+}
+
+std::string getComicSQLInsertStr(const std::string& table_name, const Strip& strip) throw()
+{
+  return "INSERT INTO `" + table_name + "` "
+         "("
+           "`id`,"
+           "`comic_name`"
+         ") "
+         "VALUES "
+         "("
+           "'" + intToString(strip.id) + "',"
+           "'" + strip.comic_name      + "'"
+         ");";
+}
+
+std::string getComicSQLSelectStr(const std::string& table_name, int id, const std::string& comic_name) throw()
+{
+  return "SELECT "
+           "`id`,"
+           "`comic_name` "
+         "FROM `" + table_name + "` "
+         "WHERE `id`=" + intToString(id) + " AND `comic_name`='" + comic_name + "';";
+}
+
+std::string getComicSQLUpdateStr(const std::string& table_name, int id, const std::string& comic_name, const Strip& strip) throw()
+{
+  return "UPDATE `" + table_name + "` "
+         "SET "
+           "`id`='"         + intToString(strip.id) + "',"
+           "`comic_name`='" + strip.comic_name      + "' "
+         "WHERE `id`=" + intToString(id) + " AND `comic_name`='" + comic_name + "';";
 }
 
 std::string getConfigSQLInsertStr(const std::string& table_name, const Comic& comic) throw()
