@@ -30,7 +30,7 @@ class Cache
   // Comics
   public:
     bool hasComic(const std::string&) const throw(E_CacheDbError);
-    void addComic(const std::string&, const Comic&) const throw(E_CacheDbError);
+    void addComic(const Comic&) const throw(E_CacheDbError);
     void remComic(const std::string&) const throw(E_CacheDbError);
     Comic* getComicConfig(const std::string&) const throw(E_CacheDbError, E_NoComicConfigFound);
     void updateComicConfig(const std::string&, const Comic&) const throw(E_CacheDbError);
