@@ -4,7 +4,8 @@
 #include <string>
 
 #include "comic.h"
-#include "strip.h"
+
+struct Strip;
 
 class Spider
 {
