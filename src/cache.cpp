@@ -204,7 +204,7 @@ std::string getConfigSQLUpdateStr(const std::string& table_name, const std::stri
 Cache::EXCEPTION_CTOR(E_CacheDbError, "Error while accessing the database file '" + config_file + "'; " + details, const std::string& config_file, const std::string& details)
 Cache::EXCEPTION_CTOR(E_CacheDbSchemaInvalid, "Config database file '" + config_file + "' has an invalid schema", const std::string& config_file);
 Cache::EXCEPTION_CTOR(E_NoComicConfigFound, "Comic '" + comic_name + "' does not exist in database" , const std::string& comic_name)
-Cache::EXCEPTION_CTOR(E_NoStripFound, "Strip #" + intToString(strip_id) + " from comic '" + comic_name + "' does not exist in database" , const std::string& comic_name, int strip_id)
+Cache::EXCEPTION_CTOR(E_NoStripFound, "Strip #" + intToString(strip_id) + " from comic '" + comic_name + "' does not exist in database", int strip_id, const std::string& comic_name)
 
 
 // --------------------------------------------------------------------------------
