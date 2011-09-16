@@ -17,15 +17,13 @@ struct Comic
 
   // vars
   unsigned short mark;
-  std::string last_url;
-  unsigned short last_img;
   std::string current_url;
+  unsigned short current_id;
   std::queue<std::string> new_imgs;
   std::queue<std::string> new_urls;
-
-  // compiled regexes
-  pcrecpp::RE img_regex;
-  pcrecpp::RE next_regex;
+  
+  std::string img_regex;
+  std::string next_regex;
 };
 
 #endif // COMIC_H

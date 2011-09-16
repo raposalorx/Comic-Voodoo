@@ -12,7 +12,7 @@
 #define STRIP_TABLE   "strips"
 #define STRIP_SCHEMA  "(`id` INTEGER, `comic_name` TEXT, `page` TEXT, `imgs` TEXT)"
 #define COMIC_TABLE  "comics"
-#define COMIC_SCHEMA "(`name` TEXT PRIMARY KEY,  `base_url` TEXT, `first_url` TEXT, `img_regex` TEXT, `next_regex` TEXT, `end_on_url` TEXT, `read_end_url` INTEGER, `download_imgs` INTEGER, `mark` INTEGER, `last_url` TEXT, `last_img` TEXT, `current_url` TEXT)"
+#define COMIC_SCHEMA "(`name` TEXT PRIMARY KEY,  `base_url` TEXT, `first_url` TEXT, `img_regex` TEXT, `next_regex` TEXT, `end_on_url` INTEGER, `read_end_url` INTEGER, `download_imgs` INTEGER, `mark` INTEGER, `current_url` TEXT, `current_id` TEXT)"
 
 
 // --------------------------------------------------------------------------------
@@ -114,88 +114,112 @@ std::string intToString(int i) throw()
   return ((std::stringstream&)(std::stringstream() << i)).str();
 }
 
-std::string getComicSQLInsertStr(const std::string& table_name, const Strip& strip) throw()
+std::string getComicSQLInsertStr(const Strip& strip) throw()
 {
-  return "INSERT INTO `" + table_name + "` "
+  return "INSERT INTO `" STRIP_TABLE "` "
          "("
            "`id`,"
-           "`comic_name`"
+           "`comic_name`,"
+           "`page`,"
+           "`imgs`"
          ") "
          "VALUES "
          "("
-           "'" + intToString(strip.id) + "',"
-           "'" + strip.comic_name      + "'"
+           "'" + intToString(strip.id)  + "',"
+           "'" + strip.comic_name       + "',"
+           "'" + strip.page             + "',"
+           "'" + strip.imgs             + "'"
          ");";
 }
 
-std::string getComicSQLSelectStr(const std::string& table_name, int id, const std::string& comic_name) throw()
+std::string getComicSQLSelectStr(int id, const std::string& comic_name) throw()
 {
   return "SELECT "
            "`id`,"
-           "`comic_name` "
-         "FROM `" + table_name + "` "
+           "`comic_name`, "
+            "`page`,"
+            "`imgs`"
+         " FROM `" STRIP_TABLE "` "
          "WHERE `id`=" + intToString(id) + " AND `comic_name`='" + comic_name + "';";
 }
 
-std::string getComicSQLUpdateStr(const std::string& table_name, int id, const std::string& comic_name, const Strip& strip) throw()
+std::string getComicSQLUpdateStr(int id, const std::string& comic_name, const Strip& strip) throw()
 {
-  return "UPDATE `" + table_name + "` "
+  return "UPDATE `" STRIP_TABLE "` "
          "SET "
            "`id`='"         + intToString(strip.id) + "',"
-           "`comic_name`='" + strip.comic_name      + "' "
-         "WHERE `id`=" + intToString(id) + " AND `comic_name`='" + comic_name + "';";
+           "`comic_name`='" + strip.comic_name      + "', "
+           "`page`='"       + strip.page            + "', "
+           "`imgs`='"       + strip.imgs            + "'"
+         " WHERE `id`=" + intToString(id) + " AND `comic_name`='" + comic_name + "';";
 }
 
-std::string getConfigSQLInsertStr(const std::string& table_name, const Comic& comic) throw()
+std::string getConfigSQLInsertStr(const Comic& comic) throw()
 {
-  return "INSERT INTO `" + table_name + "` "
+  return "INSERT INTO `" COMIC_TABLE "` "
          "("
            "`name`,"
            "`base_url`,"
            "`first_url`,"
-           "`current_url`,"
-           "`current_id`,"
            "`img_regex`,"
-           "`next_regex`"
+           "`next_regex`,"
+           "`end_on_url`,"
+           "`read_end_url`,"
+           "`download_imgs`,"
+           "`mark`,"
+           "`current_url`,"
+           "`current_id`"
          ") "
          "VALUES "
          "("
-           "'" + comic.name                    + "',"
-           "'" + comic.base_url                + "',"
-           "'" + comic.first_url               + "',"
-           "'" + comic.current_url             + "',"
-           "'" + intToString(comic.current_id) + "',"
-           "'" + comic.img_regex               + "',"
-           "'" + comic.next_regex              + "'"
+           "'" + comic.name                       + "',"
+           "'" + comic.base_url                   + "',"
+           "'" + comic.first_url                  + "',"
+           "'" + comic.img_regex                  + "',"
+           "'" + comic.next_regex                 + "',"
+           "'" + comic.end_on_url                 + "',"
+           "'" + intToString(comic.read_end_url)  + "',"
+           "'" + intToString(comic.download_imgs) + "',"
+           "'" + intToString(comic.mark)          + "',"
+           "'" + comic.current_url                + "',"
+           "'" + intToString(comic.current_id)    + "'"
          ");";
 }
 
-std::string getConfigSQLSelectStr(const std::string& table_name, const std::string& comic_name) throw()
+std::string getConfigSQLSelectStr(const std::string& comic_name) throw()
 {
   return "SELECT "
            "`name`,"
            "`base_url`,"
            "`first_url`,"
-           "`current_url`,"
-           "`current_id`,"
            "`img_regex`,"
-           "`next_regex` "
-         "FROM `" + table_name + "` "
+           "`next_regex`,"
+           "`end_on_url`,"
+           "`read_end_url`,"
+           "`download_imgs`,"
+           "`mark`,"
+           "`current_url`,"
+           "`current_id`"
+           " FROM `" COMIC_TABLE "` "
          "WHERE `name`='" + comic_name + "';";
 }
 
-std::string getConfigSQLUpdateStr(const std::string& table_name, const std::string& comic_name, const Comic& comic) throw()
+std::string getConfigSQLUpdateStr(const std::string& comic_name, const Comic& comic) throw()
 {
-  return "UPDATE `" + table_name + "` "
+  return "UPDATE `" COMIC_TABLE "` "
          "SET "
-           "`name`='"        + comic.name                    + "',"
-           "`base_url`='"    + comic.base_url                + "',"
-           "`first_url`='"   + comic.first_url               + "',"
-           "`current_url`='" + comic.current_url             + "',"
-           "`current_id`='"  + intToString(comic.current_id) + "',"
-           "`img_regex`='"   + comic.img_regex               + "',"
-           "`next_regex`='"  + comic.next_regex              + "' "
-         "WHERE `name`='" + comic_name + "';";
+           "`name`='"           + comic.name                        + "',"
+           "`base_url`='"       + comic.base_url                    + "',"
+           "`first_url`='"      + comic.first_url                   + "',"
+           "`img_regex`='"      + comic.img_regex                   + "',"
+           "`next_regex`='"     + comic.next_regex                  + "',"
+           "`end_on_url`='"     + comic.end_on_url                  + "',"
+           "`read_end_url`='"   + intToString(comic.read_end_url)   + "',"
+           "`download_imgs`='"  + intToString(comic.download_imgs)  + "',"
+           "`mark`='"           + intToString(comic.mark)           + "',"
+           "`current_url`='"    + comic.current_url                 + "',"
+           "`current_id`='"     + intToString(comic.current_id)     + "'"
+         " WHERE `name`='" + comic_name + "';";
 }
 
 
@@ -296,7 +320,7 @@ void Cache::addComic(const Comic& comic) const throw(E_CacheDbError)
   try
   {
     SQLite3Db db(cache_db, SQLITE_OPEN_READWRITE);
-    SQLite3Stmt(db, getConfigSQLInsertStr(COMIC_TABLE, comic)).step();
+    SQLite3Stmt(db, getConfigSQLInsertStr(comic)).step();
   }
   catch (SQLite3Db::E_OpenFailed e)
   { throw E_CacheDbError(cache_db, e.what()); }
@@ -329,7 +353,7 @@ Comic* Cache::getComicConfig(const std::string& comic_name) const throw(E_CacheD
     std::auto_ptr<Comic> comic(new Comic);
 
     SQLite3Db db(cache_db, SQLITE_OPEN_READONLY);
-    SQLite3Stmt stmt(db, getConfigSQLSelectStr(COMIC_TABLE, comic_name));
+    SQLite3Stmt stmt(db, getConfigSQLSelectStr(comic_name));
     if (!stmt.step())
       throw E_NoComicConfigFound(comic_name);
 
@@ -356,7 +380,7 @@ void Cache::updateComicConfig(const std::string& comic_name, const Comic& comic)
   try
   {
     SQLite3Db db(cache_db, SQLITE_OPEN_READWRITE);
-    SQLite3Stmt(db, getConfigSQLUpdateStr(COMIC_TABLE, comic_name, comic)).step();
+    SQLite3Stmt(db, getConfigSQLUpdateStr(comic_name, comic)).step();
   }
   catch (SQLite3Db::E_OpenFailed e)
   { throw E_CacheDbError(cache_db, e.what()); }
@@ -393,7 +417,7 @@ void Cache::addStrip(const Strip& strip) const throw(E_CacheDbError)
   try
   {
     SQLite3Db db(cache_db, SQLITE_OPEN_READWRITE);
-    SQLite3Stmt(db, getComicSQLInsertStr(STRIP_TABLE, strip)).step();
+    SQLite3Stmt(db, getComicSQLInsertStr(strip)).step();
   }
   catch (SQLite3Db::E_OpenFailed e)
   { throw E_CacheDbError(cache_db, e.what()); }
@@ -425,7 +449,7 @@ Strip* Cache::getStrip(int id, const std::string& comic_name) const throw(E_Cach
     std::auto_ptr<Strip> strip(new Strip);
 
     SQLite3Db db(cache_db, SQLITE_OPEN_READONLY);
-    SQLite3Stmt stmt(db, getComicSQLSelectStr(STRIP_TABLE, id, comic_name));
+    SQLite3Stmt stmt(db, getComicSQLSelectStr(id, comic_name));
     if (!stmt.step())
       throw E_NoStripFound(id, comic_name);
 
@@ -447,7 +471,7 @@ void Cache::updateStrip(int id, const std::string& comic_name, const Strip& stri
   try
   {
     SQLite3Db db(cache_db, SQLITE_OPEN_READWRITE);
-    SQLite3Stmt(db, getComicSQLUpdateStr(STRIP_TABLE, id, comic_name, strip)).step();
+    SQLite3Stmt(db, getComicSQLUpdateStr(id, comic_name, strip)).step();
   }
   catch (SQLite3Db::E_OpenFailed e)
   { throw E_CacheDbError(cache_db, e.what()); }
