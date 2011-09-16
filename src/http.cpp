@@ -5,6 +5,11 @@
 #include <curl/types.h>
 #include <curl/easy.h>
 
+HTTP::HTTP():
+  mem(NULL),
+  size(0)
+{
+}
 
 void *myrealloc(void *ptr, size_t size)
 {
@@ -32,22 +37,22 @@ size_t WriteMemoryCallback(void *ptr, size_t size, size_t nmemb, void *data)
 
 void get_http(HTTP &page, const std::string url)
 {
-	if(page.mem != NULL) // take page.mem out behind the shed, it has been sacrificed to appease the god of mem leaks
-	{
-		free(page.mem);
-		page.mem=NULL;
-		page.size = 0;
-	}
+  if(page.mem != NULL) // take page.mem out behind the shed, it has been sacrificed to appease the god of mem leaks
+  {
+    free(page.mem);
+    page.mem=NULL;
+    page.size = 0;
+  }
 
-	CURL *curl_handle;
-	curl_handle = curl_easy_init();
-	curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
-	curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, (void *)&page);
-	curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "ComicVoodoo");
-	curl_easy_setopt(curl_handle, CURLOPT_URL, url.c_str());
+  CURL *curl_handle;
+  curl_handle = curl_easy_init();
+  curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
+  curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, (void *)&page);
+  curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "ComicVoodoo");
+  curl_easy_setopt(curl_handle, CURLOPT_URL, url.c_str());
 
-	curl_easy_perform(curl_handle);
+  curl_easy_perform(curl_handle);
 
-	curl_easy_cleanup(curl_handle);
-	curl_global_cleanup();
+  curl_easy_cleanup(curl_handle);
+  curl_global_cleanup();
 }
