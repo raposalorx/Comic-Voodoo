@@ -24,26 +24,15 @@ source := ${shell find ${srcdir} -name *.cpp}
 objects := ${source:.cpp=.o}
 dependencies := ${source:.cpp=.d}
 
-test = unittest
-test_srcdir = ./test
-test_cxxflags ?= ${cxxflags}
-test_ldflags ?= ${ldflags}
-test_libs ?= ${libs} -lUnitTest++
-test_includes ?= ${includes} -I/usr/include/unittest++
-test_source := ${shell find ${test_srcdir} -name *.cpp}
-test_objects := ${test_source:.cpp=.o}
-test_dependencies := ${test_source:.cpp=.d}
-
 ##===============##
 ## Build Targets ##
 ##===============##
 
 .PHONY: all
-all: ${test}
+all: ${main}
 	@echo ===================================
 	@echo Project has been built successfully
 	@echo ===================================
-	@./${test}
 
 #.PHONY: install
 #install: ${main}
@@ -59,14 +48,8 @@ linecount:
 ${main}: ${objects}
 	${CXX} ${ldflags} ${includes} ${objects} -o ${main} ${libs}
 
-${test}: ${test_objects} ${objects}
-	${CXX} ${test_ldflags} ${test_includes} ${test_objects} ${filter-out ${srcdir}/main.o,${objects}} -o ${test} ${test_libs}
-
 ${srcdir}/%.o: ${srcdir}/%.cpp
 	${CXX} -c ${cxxflags} ${includes} -MMD -o $@ $<
-
-${test_srcdir}/%.o: ${test_srcdir}/%.cpp
-	${CXX} -c ${test_cxxflags} ${test_includes} -MMD -o $@ $<
 
 ifneq ($(MAKECMDGOALS),clean)
 -include ${dependencies}
