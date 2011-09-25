@@ -8,14 +8,14 @@
 //  Ctor
 // --------------------------------------------------------------------------------
 
-Spider::Spider(const std::string& picture_dir, Comic* comic, Cache* cache) throw():
-  picture_dir(picture_dir + '/' + comic->name),
+Spider::Spider(const std::string& picture_dir, Comic& comic, Cache* cache) throw():
+  picture_dir(picture_dir + '/' + comic.name),
   comic(comic),
   cache(cache),
-  current_id(comic->current_id),
-  current_url(comic->current_url.empty() ? comic->first_url : comic->current_url),
-  img_regex(comic->img_regex),
-  next_regex(comic->next_regex)
+  current_id(comic.current_id),
+  current_url(comic.current_url.empty() ? comic.first_url : comic.current_url),
+  img_regex(comic.img_regex),
+  next_regex(comic.next_regex)
 {
 }
 
@@ -36,13 +36,16 @@ Strip* Spider::fetchStrip() throw(E_ConnectionFailed, E_ImgFindFailed, E_ImgWrit
   //      - check src/cache.h and src/cache.cpp for examples of how the exception system works in this project
   //      - also check docs/adding_columns for a list of places to update when adding members to struct Comic or struct Strip
   HTTP page;
-  get_http(page, comic->current_url);
+  get_http(page, comic.current_url);
   if(page.mem != NULL)
   {
-    Strip* strip = getImgs(page.mem, comic->current_url);
-    std::string next = getNext(page.mem, comic->current_url);
-    if(next == "")
-      comic->current_url = next;
+    Strip* strip = getImgs(page.mem, comic.current_url);
+    std::string next = getNext(page.mem, comic.current_url);
+    if(next != "")
+    {
+      current_url = next;
+      current_id += 1;
+    }
     return strip;
   }
   return NULL;
@@ -67,7 +70,7 @@ Strip* Spider::getImgs(const char *mem, const std::string url) throw(E_ImgFindFa
     if(found == found_swap)
       break; // No images found.
     if(found[0] == '/') // Links to the root dir?
-      base = comic->base_url;
+      base = comic.base_url;
     else
     {
       base = url;
@@ -91,7 +94,7 @@ Strip* Spider::getImgs(const char *mem, const std::string url) throw(E_ImgFindFa
   Strip* last_instance_end_strip;
   try
   {
-    last_instance_end_strip = cache->getStrip(comic->instance_start_id, comic->name);
+    last_instance_end_strip = cache->getStrip(comic.instance_start_id, comic.name);
   }
   catch(Cache::E_NoStripFound e)
   {
@@ -102,7 +105,7 @@ Strip* Spider::getImgs(const char *mem, const std::string url) throw(E_ImgFindFa
   { // cut out the duplicate that happens with each respider and duplicates from reading the end_on url
     std::auto_ptr<Strip> strip(new Strip);
     strip->id = current_id;
-    strip->comic_name = comic->name;
+    strip->comic_name = comic.name;
     strip->page = url;
     strip->imgs = imgs;
     return strip.release();
@@ -127,7 +130,7 @@ std::string Spider::getNext(char *mem, std::string url) throw()
       base = base.substr(0, base.find_last_of('/')+1);
   }
   else
-    base = comic->base_url;
+    base = comic.base_url;
 
   // found url is the same as the current url, with or without the #¬
   if(
@@ -159,18 +162,18 @@ std::string Spider::getNext(char *mem, std::string url) throw()
      ( 
       (found.substr(0, 7) != "http://" && found.substr(0, 4) != "www.") 
       && 
-      (!strcmp((base + found).c_str(), comic->end_on_url.c_str()))//(!strcmp(strcomb(2, base.c_str(), found.c_str()), comic->end_on_url.c_str())) 
+      (!strcmp((base + found).c_str(), comic.end_on_url.c_str()))//(!strcmp(strcomb(2, base.c_str(), found.c_str()), comic.end_on_url.c_str())) 
      )
      ||
      (
       (found.substr(0, 7) == "http://" || found.substr(0, 4) == "www.") 
       && 
-      (!strcmp(found.c_str(), comic->end_on_url.c_str()))
+      (!strcmp(found.c_str(), comic.end_on_url.c_str()))
      )
     )
     {
       // you want to download the img on end_on_url?
-      if(comic->read_end_url)
+      if(comic.read_end_url)
       {
         string url_swap = url;
 

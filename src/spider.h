@@ -18,7 +18,7 @@ class Spider
     EXCEPTION(E_ImgFindFailed, "Could not find any images on " + url + "; ", const std::string& url);
     EXCEPTION(E_ImgWriteFailed, "Could not write the image(s) to disk at: " + dir + "; ", const std::string& dir);
 
-    Spider(const std::string&, Comic*, Cache*) throw();
+    Spider(const std::string&, Comic&, Cache*) throw();
 
   // Spidering
   public:
@@ -29,7 +29,7 @@ class Spider
     Strip* getImgs(const char *mem, const std::string url) throw(E_ImgFindFailed, Cache::E_CacheDbError);
     std::string getNext(char *mem, const std::string url) throw();
     const std::string picture_dir;
-    Comic* comic;
+    Comic comic;
     int current_id;
     
     std::string current_url;
