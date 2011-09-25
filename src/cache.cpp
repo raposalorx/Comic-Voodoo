@@ -360,10 +360,14 @@ Comic* Cache::getComicConfig(const std::string& comic_name) const throw(E_CacheD
     comic->name.assign((const char*)sqlite3_column_text(stmt, 0));
     comic->base_url.assign((const char*)sqlite3_column_text(stmt, 1));
     comic->first_url.assign((const char*)sqlite3_column_text(stmt, 2));
-    comic->current_url.assign((const char*)sqlite3_column_text(stmt, 3));
-    comic->current_id = sqlite3_column_int(stmt, 4);
-    comic->img_regex.assign((const char*)sqlite3_column_text(stmt, 5));
-    comic->next_regex.assign((const char*)sqlite3_column_text(stmt, 6));
+    comic->img_regex.assign((const char*)sqlite3_column_text(stmt, 3));
+    comic->next_regex.assign((const char*)sqlite3_column_text(stmt, 4));
+    comic->end_on_url.assign((const char*)sqlite3_column_text(stmt, 5));
+    comic->read_end_url = sqlite3_column_int(stmt, 6);
+    comic->download_imgs = sqlite3_column_int(stmt, 7);
+    comic->mark = sqlite3_column_int(stmt, 8);
+    comic->current_url.assign((const char*)sqlite3_column_text(stmt, 9));
+    comic->current_id = sqlite3_column_int(stmt, 10);
 
     return comic.release();
   }
@@ -455,6 +459,8 @@ Strip* Cache::getStrip(int id, const std::string& comic_name) const throw(E_Cach
 
     strip->id = sqlite3_column_int(stmt, 0);
     strip->comic_name.assign((const char*)sqlite3_column_text(stmt, 1));
+    strip->page.assign((const char*)sqlite3_column_text(stmt, 2));
+    strip->imgs.assign((const char*)sqlite3_column_text(stmt, 3));
 
     return strip.release();
   }

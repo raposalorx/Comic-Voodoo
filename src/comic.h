@@ -19,6 +19,7 @@ struct Comic
   unsigned short mark;
   std::string current_url;
   unsigned short current_id;
+  /*const*/ unsigned short instance_start_id;
   std::queue<std::string> new_imgs;
   std::queue<std::string> new_urls;
   
