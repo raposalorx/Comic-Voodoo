@@ -1,8 +1,9 @@
 #include "http.h"
 
-#include <stdlib.h>
+#include <cstring>
 #include <curl/curl.h>
 #include <curl/easy.h>
+#include <stdlib.h>
 
 HTTP::HTTP():
   mem(NULL),
@@ -10,7 +11,7 @@ HTTP::HTTP():
 {
 }
 
-void *myrealloc(void *ptr, size_t size)
+void* myrealloc(void* ptr, size_t size)
 {
   /* There might be a realloc() out there that doesn't like reallocing
      NULL pointers, so we take care of it here */
@@ -20,10 +21,10 @@ void *myrealloc(void *ptr, size_t size)
     return malloc(size);
 }
 
-size_t WriteMemoryCallback(void *ptr, size_t size, size_t nmemb, void *data)
+size_t WriteMemoryCallback(void* ptr, size_t size, size_t nmemb, void* data)
 {
   size_t realsize = size * nmemb;
-  HTTP *mem = (HTTP *)data;
+  HTTP* mem = (HTTP*)data;
 
   mem->mem = (char*)myrealloc(mem->mem, mem->size + realsize + 1);
   if (mem->mem) {
@@ -34,7 +35,7 @@ size_t WriteMemoryCallback(void *ptr, size_t size, size_t nmemb, void *data)
   return realsize;
 }
 
-void get_http(HTTP &page, const std::string url)
+void get_http(HTTP& page, const std::string& url)
 {
   if(page.mem != NULL) // take page.mem out behind the shed, it has been sacrificed to appease the god of mem leaks
   {
@@ -43,10 +44,10 @@ void get_http(HTTP &page, const std::string url)
     page.size = 0;
   }
 
-  CURL *curl_handle;
+  CURL* curl_handle;
   curl_handle = curl_easy_init();
   curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
-  curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, (void *)&page);
+  curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, (void*)&page);
   curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "ComicVoodoo");
   curl_easy_setopt(curl_handle, CURLOPT_URL, url.c_str());
 

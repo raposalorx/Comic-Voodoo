@@ -7,12 +7,12 @@
 #include "comic.h"
 #include "strip.h"
 
-#define CONFIG_TABLE   "options"
-#define CONFIG_SCHEMA  "(`option` TEXT, `value` TEXT)"
+#define CONFIG_TABLE  "options"
+#define CONFIG_SCHEMA "(`option` TEXT, `value` TEXT)"
 #define STRIP_TABLE   "strips"
 #define STRIP_SCHEMA  "(`id` INTEGER, `comic_name` TEXT, `page` TEXT, `imgs` TEXT)"
-#define COMIC_TABLE  "comics"
-#define COMIC_SCHEMA "(`name` TEXT PRIMARY KEY,  `base_url` TEXT, `first_url` TEXT, `img_regex` TEXT, `next_regex` TEXT, `end_on_url` INTEGER, `read_end_url` INTEGER, `download_imgs` INTEGER, `mark` INTEGER, `current_url` TEXT, `current_id` TEXT)"
+#define COMIC_TABLE   "comics"
+#define COMIC_SCHEMA  "(`name` TEXT PRIMARY KEY,  `base_url` TEXT, `first_url` TEXT, `img_regex` TEXT, `next_regex` TEXT, `end_on_url` INTEGER, `read_end_url` INTEGER, `download_imgs` INTEGER, `mark` INTEGER, `current_url` TEXT, `current_id` TEXT)"
 
 
 // --------------------------------------------------------------------------------

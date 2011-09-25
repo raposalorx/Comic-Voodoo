@@ -1,21 +1,30 @@
 #include "spider.h"
 
+#include <iostream>
 #include <memory>
 
 #include "strip.h"
 
-#include <iostream>
+
+// --------------------------------------------------------------------------------
+//  Exceptions
+// --------------------------------------------------------------------------------
+
+Spider::EXCEPTION_CTOR(E_ConnectionFailed, "Could not connect to the url: " + url + "; ", const std::string& url);
+Spider::EXCEPTION_CTOR(E_ImgFindFailed, "Could not find any images on " + url + "; ", const std::string& url);
+Spider::EXCEPTION_CTOR(E_ImgWriteFailed, "Could not write the image(s) to disk at: " + dir + "; ", const std::string& dir);
+
 
 // --------------------------------------------------------------------------------
 //  Ctor
 // --------------------------------------------------------------------------------
 
 Spider::Spider(const std::string& picture_dir, Comic& comic, Cache* cache) throw():
-  picture_dir(picture_dir + '/' + comic.name),
-  comic(comic),
-  cache(cache),
   current_id(comic.current_id),
   current_url(current_url.empty() ? comic.first_url : comic.current_url),
+  cache(cache),
+  comic(comic),
+  picture_dir(picture_dir + '/' + comic.name),
   img_regex(comic.img_regex),
   next_regex(comic.next_regex)
 {
@@ -54,7 +63,7 @@ Strip* Spider::fetchStrip() throw(E_ConnectionFailed, E_ImgFindFailed, E_ImgWrit
   return NULL;
 }
 
-Strip* Spider::getImgs(const char *mem, const std::string url) throw(E_ImgFindFailed, Cache::E_CacheDbError)
+Strip* Spider::getImgs(const char* mem, const std::string url) throw(E_ImgFindFailed, Cache::E_CacheDbError)
 {
   using std::string;
   pcrecpp::StringPiece input(mem);
@@ -69,7 +78,7 @@ Strip* Spider::getImgs(const char *mem, const std::string url) throw(E_ImgFindFa
 
     found_swap = found;
     img_regex.FindAndConsume(&input, &found);
-    
+
     if(found == found_swap)
       break; // No images found.
     if(found[0] == '/') // Links to the root dir?
@@ -119,7 +128,7 @@ Strip* Spider::getImgs(const char *mem, const std::string url) throw(E_ImgFindFa
     return NULL;
 }
 
-std::string Spider::getNext(char *mem, std::string url) throw()
+std::string Spider::getNext(char* mem, std::string url) throw()
 {
   using std::string;
   string found;
@@ -141,21 +150,21 @@ std::string Spider::getNext(char *mem, std::string url) throw()
   // found url is the same as the current url, with or without the #¬
   if(
      (
-      (found.substr(0, 7) != "http://" && found.substr(0, 4) != "www.") 
+      (found.substr(0, 7) != "http://" && found.substr(0, 4) != "www.")
       &&
       (
        (!strcmp((base + found).c_str(), url.c_str()))//(!strcmp(strcomb(2, base.c_str(), found.c_str()) , url.c_str()))
-       || 
+       ||
        (!strcmp((base + found).c_str(), (url + "#").c_str()))//(!strcmp(strcomb(2, base.c_str(), found.c_str()) , strcomb(2, url.c_str(), "#")))
       )
      )
-     || 
+     ||
      (
-      (found.substr(0, 7) == "http://" || found.substr(0, 4) == "www.") 
+      (found.substr(0, 7) == "http://" || found.substr(0, 4) == "www.")
       &&
       (
        (!strcmp(found.c_str() , url.c_str()))
-       || 
+       ||
        (!strcmp(found.c_str() , (url + "#").c_str()))//(!strcmp(found.c_str() , strcomb(2, url.c_str(), "#")))
       )
      )
@@ -164,16 +173,16 @@ std::string Spider::getNext(char *mem, std::string url) throw()
 
   // found url is the end_on_url
   if
-    ( 
-     ( 
-      (found.substr(0, 7) != "http://" && found.substr(0, 4) != "www.") 
-      && 
-      (!strcmp((base + found).c_str(), comic.end_on_url.c_str()))//(!strcmp(strcomb(2, base.c_str(), found.c_str()), comic.end_on_url.c_str())) 
+    (
+     (
+      (found.substr(0, 7) != "http://" && found.substr(0, 4) != "www.")
+      &&
+      (!strcmp((base + found).c_str(), comic.end_on_url.c_str()))//(!strcmp(strcomb(2, base.c_str(), found.c_str()), comic.end_on_url.c_str()))
      )
      ||
      (
-      (found.substr(0, 7) == "http://" || found.substr(0, 4) == "www.") 
-      && 
+      (found.substr(0, 7) == "http://" || found.substr(0, 4) == "www.")
+      &&
       (!strcmp(found.c_str(), comic.end_on_url.c_str()))
      )
     )
