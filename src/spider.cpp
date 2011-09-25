@@ -4,6 +4,8 @@
 
 #include "strip.h"
 
+#include <iostream>
+
 // --------------------------------------------------------------------------------
 //  Ctor
 // --------------------------------------------------------------------------------
@@ -13,7 +15,7 @@ Spider::Spider(const std::string& picture_dir, Comic& comic, Cache* cache) throw
   comic(comic),
   cache(cache),
   current_id(comic.current_id),
-  current_url(comic.current_url.empty() ? comic.first_url : comic.current_url),
+  current_url(current_url.empty() ? comic.first_url : comic.current_url),
   img_regex(comic.img_regex),
   next_regex(comic.next_regex)
 {
@@ -36,11 +38,12 @@ Strip* Spider::fetchStrip() throw(E_ConnectionFailed, E_ImgFindFailed, E_ImgWrit
   //      - check src/cache.h and src/cache.cpp for examples of how the exception system works in this project
   //      - also check docs/adding_columns for a list of places to update when adding members to struct Comic or struct Strip
   HTTP page;
-  get_http(page, comic.current_url);
+  get_http(page, current_url);
   if(page.mem != NULL)
   {
-    Strip* strip = getImgs(page.mem, comic.current_url);
-    std::string next = getNext(page.mem, comic.current_url);
+    Strip* strip = getImgs(page.mem, current_url);
+    std::string next = getNext(page.mem, current_url);
+    std::cout << "next: " << next << std::endl;
     if(next != "")
     {
       current_url = next;
@@ -101,13 +104,16 @@ Strip* Spider::getImgs(const char *mem, const std::string url) throw(E_ImgFindFa
     no_previous = true;
   }
 
-  if(no_previous || (imgs!=last_instance_end_strip->imgs))
+  if((no_previous || last_imgs=="") || (imgs!=last_instance_end_strip->imgs || imgs!=last_imgs))
   { // cut out the duplicate that happens with each respider and duplicates from reading the end_on url
     std::auto_ptr<Strip> strip(new Strip);
     strip->id = current_id;
     strip->comic_name = comic.name;
     strip->page = url;
     strip->imgs = imgs;
+
+    last_imgs = imgs;
+
     return strip.release();
   }
     return NULL;

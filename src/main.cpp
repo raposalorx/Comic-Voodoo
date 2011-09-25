@@ -21,10 +21,14 @@ int main(int, char**)
   Spider spider("", comic, cache);
 
   std::string current = comic.current_url;
-  Strip* strip = spider.fetchStrip();
+  Strip* strip;
   
-  std::cout << strip->page << "\n" << strip->imgs << std::endl;
-
+  do
+  {
+    strip = spider.fetchStrip();
+    std::cout << strip->page << "\n" << strip->imgs << std::endl;
+  }while(strip!=NULL);
+  
   delete cache;
 
   return 0;

@@ -34,6 +34,8 @@ class Spider
     
     std::string current_url;
 
+    std::string last_imgs;
+
     Cache* cache;
 
     pcrecpp::RE img_regex;
