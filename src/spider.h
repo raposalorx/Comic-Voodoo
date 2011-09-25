@@ -14,16 +14,20 @@ class Spider
 {
   // Ctor
   public:
+    EXCEPTION(E_ConnectionFailed, "Could not connect to the url: " + url + "; ", const std::string& url);
+    EXCEPTION(E_ImgFindFailed, "Could not find any images on " + url + "; ", const std::string& url);
+    EXCEPTION(E_ImgWriteFailed, "Could not write the image(s) to disk at: " + dir + "; ", const std::string& dir);
+
     Spider(const std::string&, Comic*, Cache*) throw();
 
   // Spidering
   public:
-    Strip* fetchStrip() throw(/* TODO */);
-    std::vector<Strip*>* fetchAllStrips() throw(/* TODO */);
+    Strip* fetchStrip() throw(E_ConnectionFailed, E_ImgFindFailed, E_ImgWriteFailed, Cache::E_CacheDbError);
+    std::vector<Strip*>* fetchAllStrips() throw(E_ConnectionFailed, E_ImgFindFailed, E_ImgWriteFailed, Cache::E_CacheDbError);
     const std::string& getCurrentURL() const throw();
   private:
-    Strip* getImgs(const char *mem, const std::string url) throw(/* TODO */);
-    std::string getNext(char *mem, const std::string url) throw(/* TODO */);
+    Strip* getImgs(const char *mem, const std::string url) throw(E_ImgFindFailed, Cache::E_CacheDbError);
+    std::string getNext(char *mem, const std::string url) throw();
     const std::string picture_dir;
     Comic* comic;
     int current_id;

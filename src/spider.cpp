@@ -24,12 +24,12 @@ Spider::Spider(const std::string& picture_dir, Comic* comic, Cache* cache) throw
 //  Spidering
 // --------------------------------------------------------------------------------
 
-std::vector<Strip*>* fetchAllStrips() throw()
+std::vector<Strip*>* Spider::fetchAllStrips() throw(E_ConnectionFailed, E_ImgFindFailed, E_ImgWriteFailed, Cache::E_CacheDbError)
 {
   return NULL;
 }
 
-Strip* Spider::fetchStrip() throw()
+Strip* Spider::fetchStrip() throw(E_ConnectionFailed, E_ImgFindFailed, E_ImgWriteFailed, Cache::E_CacheDbError)
 {
   // TODO - should fetch the page at current_url, create a Strip object from the contents, download the comic images to picture_dir, and figure out what the next value of current_url should be
   //      - should return NULL when there are no more strips to fetch; you'll probably have to change around the data used for update checks that is stored in struct Comic (currently only Comic::current_url is used for update checks)
@@ -48,7 +48,7 @@ Strip* Spider::fetchStrip() throw()
   return NULL;
 }
 
-Strip* Spider::getImgs(const char *mem, const std::string url) throw()
+Strip* Spider::getImgs(const char *mem, const std::string url) throw(E_ImgFindFailed, Cache::E_CacheDbError)
 {
   using std::string;
   pcrecpp::StringPiece input(mem);
@@ -82,8 +82,23 @@ Strip* Spider::getImgs(const char *mem, const std::string url) throw()
     imgs += value += ";";
   }
 
-  Strip* last_instance_end_strip = cache->getStrip(comic->instance_start_id, comic->name);
-  if(imgs.size() == 0 || (imgs!=last_instance_end_strip->imgs && imgs!=""))
+  if(imgs=="")
+  {
+    throw E_ImgFindFailed(url);
+  }
+
+  bool no_previous = false;
+  Strip* last_instance_end_strip;
+  try
+  {
+    last_instance_end_strip = cache->getStrip(comic->instance_start_id, comic->name);
+  }
+  catch(Cache::E_NoStripFound e)
+  {
+    no_previous = true;
+  }
+
+  if(no_previous || (imgs!=last_instance_end_strip->imgs))
   { // cut out the duplicate that happens with each respider and duplicates from reading the end_on url
     std::auto_ptr<Strip> strip(new Strip);
     strip->id = current_id;
