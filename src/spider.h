@@ -34,6 +34,8 @@ class Spider
     
     std::string current_url;
 
+    bool done;
+
     std::string last_imgs;
 
     Cache* cache;
