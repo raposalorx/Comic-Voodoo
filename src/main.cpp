@@ -1,141 +1,162 @@
 #include <iostream>
+#include <fstream>
 #include <argtable2.h>
 #include <iomanip>
+#include "yaml-cpp/yaml.h"
+#include <boost/filesystem.hpp>
 
 #include "spider.h"
+
+namespace fs = boost::filesystem;
+
+bool fexists(const char *filename)
+{
+  std::ifstream ifile(filename, std::ifstream::binary);
+  return ifile;
+}
 
 int main(int argc, char** argv)
 {
   using std::cout;
   using std::endl;
   using std::setw;
+  
+  std::string env_home = getenv("HOME");
+  std::string voodoo_home = env_home + "/.voodoo";
+  std::string cache_file = voodoo_home + "/cache";
+
+  Cache* cache = new Cache(voodoo_home, "cache");
+
+  fs::file_status voodoo_status = fs::status(voodoo_home);
+  if(!fs::exists(voodoo_status))
+  {
+    cout << "Creating " << voodoo_home << endl;
+    if(!fs::create_directory(voodoo_home))
+    {
+      cout << "Failed to create " << voodoo_home << endl;
+      return 1;
+    }
+  }
+  fs::file_status cache_status = fs::status(cache_file);
+  if(!fs::exists(cache_status))
+  {
+    cout << "Creating a new database." << endl;
+    try
+    {
+      cache->createCacheDb();
+    }
+    catch(Cache::E_CacheDbError e)
+    {
+      cout << "Failed to create a new database." << endl;
+      return 1;
+    }
+  }
 
   struct arg_str *help  = arg_strn(NULL,NULL,"help",1,1,NULL);
   struct arg_end *endhelp   = arg_end(20);
   void* argsHelp[] = {help, endhelp};
   int helpErrors;
+  helpErrors = arg_parse(argc,argv,argsHelp);
 
-  struct arg_rex *add  = arg_rex1(NULL,NULL,"add",NULL,0,NULL);
-  struct arg_str *add_comic = arg_str1(NULL,NULL,"\"comic\"", NULL);
-  struct arg_end *endadd   = arg_end(20);
-  void* argsAdd[] = {add, add_comic, endadd};
-  int addErrors;
+  struct arg_rex *import  = arg_rex1(NULL,NULL,"import",NULL,0,NULL);
+  struct arg_file *import_comics = arg_filen(NULL,NULL,"FILE", 1, 64, "TODOfilename");
+  struct arg_end *endimport   = arg_end(20);
+  void* argsImport[] = {import, import_comics, endimport};
+  int importErrors;
+  importErrors = arg_parse(argc,argv,argsImport);
 
-  struct arg_rex *rm  = arg_rex1(NULL,NULL,"rm",NULL,0,NULL);
-  struct arg_end *endrm   = arg_end(20);
-  void* argsRm[] = {rm, endrm};
-  int rmErrors;
+  struct arg_rex *xport  = arg_rex1(NULL,NULL,"export",NULL,0,NULL);
+  struct arg_str *xport_comics = arg_strn(NULL,NULL,"COMIC", 1, 64, "TODOcomicname");
+  struct arg_end *endxport   = arg_end(20);
+  void* argsXport[] = {xport, xport_comics, endxport};
+  int xportErrors;
+  xportErrors = arg_parse(argc,argv,argsXport);
 
   struct arg_rex *list  = arg_rex1(NULL,NULL,"list",NULL,0,NULL);
-  struct arg_lit *list_c     = arg_lit0("c", NULL, "List currently watched comics.");
+  struct arg_lit *list_current = arg_lit0("c","current","TODOcurrent");
   struct arg_end *endlist   = arg_end(20);
-  void* argsList[] = {list, list_c, endlist};
+  void* argsList[] = {list, list_current, endlist};
   int listErrors;
-
-  struct arg_rex *fetch  = arg_rex1(NULL,NULL,"fetch",NULL,0,NULL);
-  struct arg_lit *fetch_r     = arg_lit0("r", NULL,         "Re-fetch an entire comic, starting from the beginning.");
-  struct arg_lit *fetch_m     = arg_lit0("m", "mark", "Mark each fetched comic with the earliest newly fetched stip");
-  struct arg_str *fetch_comic = arg_str1(NULL,NULL,"[comic]", "Comic to add");
-  struct arg_end *endfetch   = arg_end(20);
-  void* argsFetch[] = {fetch, fetch_r, fetch_m, fetch_comic, endfetch};
-  int fetchErrors;
-
-  struct arg_rex *mark  = arg_rex1(NULL,NULL,"mark",NULL,0,NULL);
-  struct arg_lit *mark_f     = arg_lit0("f", NULL, "First");
-  struct arg_lit *mark_e     = arg_lit0("e", NULL, "End");
-  struct arg_lit *mark_l     = arg_lit0("l", NULL, "List");
-  struct arg_str *mark_comic = arg_str1(NULL,NULL,"[comic]", "Comic");
-  struct arg_int *mark_n = arg_intn("n", "num", NULL, 0, 1, "Number of the strip");
-  struct arg_end *endmark   = arg_end(20);
-  void* argsMark[] = {mark, mark_f, mark_e, mark_l, mark_comic, mark_n, endmark};
-  int markErrors;
-
-  struct arg_rex *view  = arg_rex1(NULL,NULL,"view",NULL,0,NULL);
-  struct arg_lit *view_m = arg_lit0("m", NULL, "View comic at the mark.");
-  struct arg_int *view_n = arg_intn("n", "num", NULL, 0, 1, "Number of the strip");
-  struct arg_str *view_comic = arg_str1(NULL,NULL,"\"comic\"", "Comic to view");
-  struct arg_end *endview   = arg_end(20);
-  void* argsView[] = {view, view_m, view_n, view_comic, endview};
-  int viewErrors;
-
-  struct arg_rex *set  = arg_rex1(NULL,NULL,"set",NULL,0,NULL);
-  struct arg_end *endset   = arg_end(20);
-  void* argsSet[] = {set, endset};
-  int setErrors;
-
-  struct arg_rex *update  = arg_rex1(NULL,NULL,"update",NULL,0,NULL);
-  struct arg_end *endupdate   = arg_end(20);
-  void* argsUpdate[] = {update, endupdate};
-  int updateErrors;
-
-  /* verify the argtable[] entries were allocated sucessfully */
-  /*    if (arg_nullcheck(argtable) != 0)
-        {
-   * NULL entries were detected, some allocations must have failed *
-   printf("%s: insufficient memory\n",progname);
-   }
-   */
-  /* Parse the command line as defined by argtable[] */
-  helpErrors = arg_parse(argc,argv,argsHelp);
-  addErrors = arg_parse(argc,argv,argsAdd);
-  rmErrors = arg_parse(argc,argv,argsRm);
   listErrors = arg_parse(argc,argv,argsList);
-  fetchErrors = arg_parse(argc,argv,argsFetch);
-  markErrors = arg_parse(argc,argv,argsMark);
-  viewErrors = arg_parse(argc,argv,argsView);
-  setErrors = arg_parse(argc,argv,argsSet);
-  updateErrors = arg_parse(argc,argv,argsUpdate);
 
-  if (addErrors == 0)
+  if (importErrors == 0)
   {
-    /*		if(add_comic->count == 1)
+    cout << "import: " << endl;
+    if(import_comics->count > 0)
+    {
+      for(unsigned int i = 0; i < import_comics->count; i++)
+      {
+        cout << "    " << import_comics->filename[i] << endl;
+/*        try 
+        {
+          char* configFile = import_comics->filename[i]);
+          ifstream fin(configFile);
+          YAML::Parser parser(fin);
+
+          YAML::Node doc;    // already parsed
+          parser.GetNextDocument(doc);
+          if(const YAML::Node *pName = doc.FindValue("base_url")) // mandatory
+            *pName >> comics.at(i).base_url;
+          if(const YAML::Node *pName = doc.FindValue("first_url")) // mandatory
+            *pName >> comics.at(i).first_url;
+          else
+            comics.at(i).base_url = "";
+          if(const YAML::Node *pName = doc.FindValue("img_regex")) // mandatory
           {
-          std::fstream comics_file(comicsfile.c_str(), std::ios::out|std::ios::trunc); // add comic to comics list
-          for(unsigned int i = 0; i < comics.size(); i++)
-          {
-          const string s = strcomb(3, "- ", comics.at(i).name.c_str(), "\n");
-          comics_file.write(s.c_str(), s.size());
-          }
-          const string s = strcomb(3, "- ", add_comic, "\n");
-          comics_file.write(s.c_str(), s.size());
-          comics_file.close();
-          loadComics(comics); // validate and cull comics
+            string img_regex;
+            *pName >> img_regex;
+            comics.at(i).img_regex = img_regex;
           }
           else
-          cout << "You must specify one comic to add." << endl;
-          */
+            comics.at(i).base_url = "";
+          if(const YAML::Node *pName = doc.FindValue("next_regex")) // mandatory
+          {
+            string next_regex;
+            *pName >> next_regex;
+            comics.at(i).next_regex = next_regex;
+          }
+          else
+            comics.at(i).base_url = "";
+          if(const YAML::Node *pName = doc.FindValue("end_on_url"))
+            *pName >> comics.at(i).end_on_url;
+          if(const YAML::Node *pName = doc.FindValue("read_end_url"))
+            *pName >> comics.at(i).read_end_url;
+          free(configFile);
+        } 
+        catch(YAML::ParserException& e)
+        {
+          cout << comics.at(i).name.c_str() << ".yaml" << e.what() << "\n";
+        }
+*/
+      }
+    }
+    else
+    {
+      cout << "You must specify at least one comic file to import." << endl;
+    }
   }
-  else if (rmErrors == 0)
+  else if (xportErrors == 0)
   {
-    cout << "rm";
+    cout << "export: " << endl;
+    if(xport_comics->count > 0)
+    {
+      for(unsigned int i = 0; i < xport_comics->count; i++)
+      {
+        cout << "    " << xport_comics->sval[i] << endl;
+      }
+    }
+    else
+    {
+      cout << "You must specify at least one comic to export." << endl;
+    }
   }
   else if (listErrors == 0)
   {
-    cout << "list";
-  }
-  else if (fetchErrors == 0)
-  {
-    cout << "fetch";
-    if (fetch_r->count >0)
+    cout << "list" << endl;
+    if(list_current->count == 1)
     {
-      cout << " -r";
+      cout << "    " << "current" << endl;
     }
-  }
-  else if (markErrors == 0)
-  {
-    cout << "mark";
-  }
-  else if (viewErrors == 0)
-  {
-    cout << "view";
-  }
-  else if (setErrors == 0)
-  {
-    cout << "set";
-  }
-  else if (updateErrors == 0)
-  {
-    cout << "update";
   }
 
   /* special case: '--help' takes precedence over error reporting */
@@ -144,38 +165,22 @@ int main(int argc, char** argv)
     //        printf("Usage: %s", progname);
     cout << "comic [command]\n" << endl;
     cout << "Commands:" << endl;
-    arg_print_syntax(stdout,argsAdd,"\n");
-    arg_print_syntax(stdout,argsRm,"\n");
+    arg_print_syntax(stdout,argsImport,"\n");
+    arg_print_syntax(stdout,argsXport,"\n");
     arg_print_syntax(stdout,argsList,"\n");
-    arg_print_syntax(stdout,argsFetch,"\n");
-    arg_print_syntax(stdout,argsMark,"\n");
-    arg_print_syntax(stdout,argsView,"\n");
-    arg_print_syntax(stdout,argsSet,"\n");
-    arg_print_syntax(stdout,argsUpdate,"\n");
     arg_print_syntax(stdout,argsHelp,"\n");
     //        printf("Echo the STRINGs to standard output.\n\n");
     cout << "\nDescriptions:" << endl;
-    cout << "  add" << setw(28) << "HOLY SHIT!" << "\n";
-    arg_print_glossary(stdout,argsAdd,"    %-16s %s\n");
-    cout << "  rm" << setw(29) << "HOLY SHIT!" << "\n";
-    arg_print_glossary(stdout,argsRm,"  %-16s %s\n");
-    cout << "  list" << setw(27) << "HOLY SHIT!" << "\n";
-    arg_print_glossary(stdout,argsList,"      %-16s %s\n");
-    cout << "  fetch" << setw(26) << "HOLY SHIT!" << "\n";
-    arg_print_glossary(stdout,argsFetch,"      %-16s %s\n");
-    cout << "  mark" << setw(27) << "HOLY SHIT!" << "\n";
-    arg_print_glossary(stdout,argsMark,"      %-16s %s\n");
-    cout << "  view" << setw(27) << "HOLY SHIT!" << "\n";
-    arg_print_glossary(stdout,argsView,"      %-16s %s\n");
-    cout << "  set" << setw(28) << "HOLY SHIT!" << "\n";
-    arg_print_glossary(stdout,argsSet,"      %-16s %s\n");
-    cout << "  update" << setw(25) << "HOLY SHIT!" << "\n";
-    arg_print_glossary(stdout,argsUpdate,"      %-16s %s\n");
-    cout << "  help" << setw(27) << "HOLY SHIT!" << "\n";
-    arg_print_glossary(stdout,argsHelp,"      %-16s %s\n");
+    cout << "  import" << setw(23) << "HOLY SHIT!" << "\n";
+    arg_print_glossary(stdout,argsImport,"    %-16s %s\n");
+    cout << "  export" << setw(23) << "HOLY SHIT!" << "\n";
+    arg_print_glossary(stdout,argsXport,"    %-16s %s\n");
+    cout << "  list" << setw(25) << "HOLY SHIT!" << "\n";
+    arg_print_glossary(stdout,argsList,"    %-16s %s\n");
+    cout << "  help" << setw(25) << "HOLY SHIT!" << "\n";
+    arg_print_glossary(stdout,argsHelp,"    %-16s %s\n");
     cout << endl;
   }
-
   /* special case: '--version' takes precedence error reporting */
   /*	else if (vers->count > 0)
       {
@@ -183,23 +188,9 @@ int main(int argc, char** argv)
       printf("September 2003, Stewart Heitmann\n");
       }
       */
-  /* If the parser returned any errors then display them and exit */
-  //	else if (nerrors > 0)
-  //      {
-  /* Display the error details contained in the arg_end struct.*/
-  /*        arg_print_errors(stdout,end,progname);
-            printf("Try '%s --help' for more information.\n",progname);
-            }
-            */
   /* deallocate each non-null entry in argtable[] */
-  arg_freetable(argsAdd,sizeof(argsAdd)/sizeof(argsAdd[0]));
-  arg_freetable(argsRm,sizeof(argsRm)/sizeof(argsRm[0]));
-  arg_freetable(argsList,sizeof(argsList)/sizeof(argsList[0]));
-  arg_freetable(argsFetch,sizeof(argsFetch)/sizeof(argsFetch[0]));
-  arg_freetable(argsMark,sizeof(argsMark)/sizeof(argsMark[0]));
-  arg_freetable(argsView,sizeof(argsView)/sizeof(argsView[0]));
-  arg_freetable(argsSet,sizeof(argsSet)/sizeof(argsSet[0]));
-  arg_freetable(argsUpdate,sizeof(argsUpdate)/sizeof(argsUpdate[0]));
+  arg_freetable(argsImport,sizeof(argsImport)/sizeof(argsImport[0]));
+  arg_freetable(argsXport,sizeof(argsXport)/sizeof(argsXport[0]));
   arg_freetable(argsHelp,sizeof(argsHelp)/sizeof(argsHelp[0]));
 
   /*  Comic comic;
