@@ -59,7 +59,7 @@ int main(int argc, char** argv)
   helpErrors = arg_parse(argc,argv,argsHelp);
 
   struct arg_rex *import  = arg_rex1(NULL,NULL,"import",NULL,0,NULL);
-  struct arg_file *import_comics = arg_filen(NULL,NULL,"FILE", 1, 64, "TODOfilename");
+  struct arg_file *import_comics = arg_filen(NULL,NULL,"FILE", 1, 64, "Yaml comic to import.");
   struct arg_end *endimport   = arg_end(20);
   void* argsImport[] = {import, import_comics, endimport};
   int importErrors;
@@ -79,7 +79,7 @@ int main(int argc, char** argv)
   int listErrors;
   listErrors = arg_parse(argc,argv,argsList);
 
-  if (importErrors == 0)
+  if (import->count == 1)
   {
     cout << "import: " << endl;
     if(import_comics->count > 0)
@@ -87,47 +87,97 @@ int main(int argc, char** argv)
       for(unsigned int i = 0; i < import_comics->count; i++)
       {
         cout << "    " << import_comics->filename[i] << endl;
-/*        try 
+        try 
         {
-          char* configFile = import_comics->filename[i]);
-          ifstream fin(configFile);
+          char* configFile = (char*)malloc(sizeof(import_comics->filename[i])); strcpy(configFile, import_comics->filename[i]);
+          std::ifstream fin(configFile);
           YAML::Parser parser(fin);
+          Comic comic;
 
           YAML::Node doc;    // already parsed
           parser.GetNextDocument(doc);
-          if(const YAML::Node *pName = doc.FindValue("base_url")) // mandatory
-            *pName >> comics.at(i).base_url;
-          if(const YAML::Node *pName = doc.FindValue("first_url")) // mandatory
-            *pName >> comics.at(i).first_url;
+          if(const YAML::Node *pName = doc.FindValue("name")) // mandatory
+            *pName >> comic.name;
           else
-            comics.at(i).base_url = "";
+          {
+            cout << "A name field is required in " << import_comics->filename[i] << endl;
+            return 1;
+          }
+          if(const YAML::Node *pName = doc.FindValue("base_url")) // mandatory
+            *pName >> comic.base_url;
+          else
+          {
+            cout << "A base_url field is required in " << import_comics->filename[i] << endl;
+            return 1;
+          }
+          if(const YAML::Node *pName = doc.FindValue("first_url")) // mandatory
+            *pName >> comic.first_url;
+          else
+          {
+            cout << "A first_url field is required in " << import_comics->filename[i] << endl;
+            return 1;
+          }
           if(const YAML::Node *pName = doc.FindValue("img_regex")) // mandatory
           {
-            string img_regex;
-            *pName >> img_regex;
-            comics.at(i).img_regex = img_regex;
+            *pName >> comic.img_regex;
           }
           else
-            comics.at(i).base_url = "";
+          {
+            cout << "A img_regex field is required in " << import_comics->filename[i] << endl;
+            return 1;
+          }
           if(const YAML::Node *pName = doc.FindValue("next_regex")) // mandatory
           {
-            string next_regex;
-            *pName >> next_regex;
-            comics.at(i).next_regex = next_regex;
+            *pName >> comic.next_regex;
           }
           else
-            comics.at(i).base_url = "";
+          {
+            cout << "A next_regex field is required in " << import_comics->filename[i] << endl;
+            return 1;
+          }
           if(const YAML::Node *pName = doc.FindValue("end_on_url"))
-            *pName >> comics.at(i).end_on_url;
+            *pName >> comic.end_on_url;
+          else
+            comic.end_on_url = "";
           if(const YAML::Node *pName = doc.FindValue("read_end_url"))
-            *pName >> comics.at(i).read_end_url;
+            *pName >> comic.read_end_url;
+          else
+            comic.read_end_url = 0;
+          if(const YAML::Node *pName = doc.FindValue("download_imgs"))
+            *pName >> comic.download_imgs;
+          else
+            comic.download_imgs = 0;
           free(configFile);
+
+          try
+          {
+            cout << comic.name << endl;
+            if(!cache->hasComic(comic.name))
+            {
+              comic.mark = 0;
+              comic.current_url = comic.first_url;
+              comic.current_id = 0;
+              cache->addComic(comic);
+            }
+            else
+            {
+              Comic* oldcomic = cache->getComicConfig(comic.name);
+              comic.mark = oldcomic->mark;
+              comic.current_url = oldcomic->current_url;
+              comic.current_id = oldcomic->current_id;
+              cache->updateComicConfig(comic.name, comic);
+            }
+          }
+          catch(Cache::E_CacheDbError e)
+          {
+            cout << e.what() << endl;
+            return 1;
+          }
         } 
         catch(YAML::ParserException& e)
         {
-          cout << comics.at(i).name.c_str() << ".yaml" << e.what() << "\n";
+          cout << import_comics->filename[i] << e.what() << "\n";
         }
-*/
       }
     }
     else
@@ -171,13 +221,13 @@ int main(int argc, char** argv)
     arg_print_syntax(stdout,argsHelp,"\n");
     //        printf("Echo the STRINGs to standard output.\n\n");
     cout << "\nDescriptions:" << endl;
-    cout << "  import" << setw(23) << "HOLY SHIT!" << "\n";
+    cout << "  import" << setw(13) << "" << "blah\n";//"Imports a comic file (ending in .yaml) to the database." << "\n";
     arg_print_glossary(stdout,argsImport,"    %-16s %s\n");
-    cout << "  export" << setw(23) << "HOLY SHIT!" << "\n";
+    cout << "  export" << setw(13) << "" << "HOLY SHIT!" << "\n";
     arg_print_glossary(stdout,argsXport,"    %-16s %s\n");
-    cout << "  list" << setw(25) << "HOLY SHIT!" << "\n";
+    cout << "  list" << setw(15) << "" << "HOLY SHIT!" << "\n";
     arg_print_glossary(stdout,argsList,"    %-16s %s\n");
-    cout << "  help" << setw(25) << "HOLY SHIT!" << "\n";
+    cout << "  help" << setw(15) << "" << "HOLY SHIT!" << "\n";
     arg_print_glossary(stdout,argsHelp,"    %-16s %s\n");
     cout << endl;
   }
@@ -192,6 +242,9 @@ int main(int argc, char** argv)
   arg_freetable(argsImport,sizeof(argsImport)/sizeof(argsImport[0]));
   arg_freetable(argsXport,sizeof(argsXport)/sizeof(argsXport[0]));
   arg_freetable(argsHelp,sizeof(argsHelp)/sizeof(argsHelp[0]));
+
+
+  delete cache;
 
   /*  Comic comic;
       comic.name = "Schlock";
