@@ -31,6 +31,7 @@ class Spider
     std::string getNext(char* mem, const std::string url) throw();
     int current_id;
     std::string current_url;
+    bool done;
     std::string last_imgs;
     Cache* cache;
 

@@ -26,7 +26,8 @@ Spider::Spider(const std::string& picture_dir, Comic& comic, Cache* cache) throw
   comic(comic),
   picture_dir(picture_dir + '/' + comic.name),
   img_regex(comic.img_regex),
-  next_regex(comic.next_regex)
+  next_regex(comic.next_regex),
+  done(false)
 {
 }
 
@@ -46,6 +47,9 @@ Strip* Spider::fetchStrip() throw(E_ConnectionFailed, E_ImgFindFailed, E_ImgWrit
   //      - should return NULL when there are no more strips to fetch; you'll probably have to change around the data used for update checks that is stored in struct Comic (currently only Comic::current_url is used for update checks)
   //      - check src/cache.h and src/cache.cpp for examples of how the exception system works in this project
   //      - also check docs/adding_columns for a list of places to update when adding members to struct Comic or struct Strip
+  if(done)
+    return NULL;
+
   HTTP page;
   get_http(page, current_url);
   if(page.mem != NULL)
@@ -57,6 +61,10 @@ Strip* Spider::fetchStrip() throw(E_ConnectionFailed, E_ImgFindFailed, E_ImgWrit
     {
       current_url = next;
       current_id += 1;
+    }
+    else
+    {
+      done = true;
     }
     return strip;
   }
@@ -137,7 +145,7 @@ std::string Spider::getNext(char* mem, std::string url) throw()
   next_regex.PartialMatch(mem, &found);
 
   if(found == "")
-    return NULL;
+    return "";
 
   if(found[0] != '/') // Doesn't point to root.
   {
