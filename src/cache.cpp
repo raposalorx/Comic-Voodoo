@@ -91,7 +91,7 @@ class SQLite3Stmt
     {
       switch (sqlite3_step(stmt))
       {
-        case SQLITE_OK:
+        case SQLITE_ROW:
           return true;
         case SQLITE_DONE:
           return false;

@@ -81,7 +81,6 @@ int main(int argc, char** argv)
 
   if (import->count == 1)
   {
-    cout << "import: " << endl;
     if(import_comics->count > 0)
     {
       for(unsigned int i = 0; i < import_comics->count; i++)
@@ -151,7 +150,6 @@ int main(int argc, char** argv)
 
           try
           {
-            cout << comic.name << endl;
             if(!cache->hasComic(comic.name))
             {
               comic.mark = 0;
@@ -167,6 +165,7 @@ int main(int argc, char** argv)
               comic.current_id = oldcomic->current_id;
               cache->updateComicConfig(comic.name, comic);
             }
+            cout << comic.name << " imported." << endl;
           }
           catch(Cache::E_CacheDbError e)
           {
