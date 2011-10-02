@@ -27,7 +27,7 @@ int main(int argc, char** argv)
     return 1;
   }
 
-  struct arg_str *help  = arg_strn(NULL,NULL,"help",1,1,NULL);
+  struct arg_rex *help  = arg_rex1(NULL,NULL,"help",NULL,0,NULL);
   struct arg_end *endhelp   = arg_end(20);
   void* argsHelp[] = {help, endhelp};
   int helpErrors;
@@ -54,24 +54,8 @@ int main(int argc, char** argv)
   int listErrors;
   listErrors = arg_parse(argc,argv,argsList);
 
-  if (import->count == 1)
-  {
-    return importYaml(cache, import_comics);
-  }
-  else if (xportErrors == 0)
-  {
-    return exportYaml(cache, xport_comics);
-  }
-  else if (listErrors == 0)
-  {
-    cout << "list" << endl;
-    if(list_current->count == 1)
-    {
-      cout << "    " << "current" << endl;
-    }
-  }
 
-  else if (help->count > 0)
+  if (help->count > 0 && helpErrors == 0)
   {
     cout << "comic [command]\n" << endl;
     cout << "Commands:" << endl;
@@ -90,6 +74,22 @@ int main(int argc, char** argv)
     cout << "  help" << setw(15) << "" << "HOLY SHIT!" << "\n";
     arg_print_glossary(stdout,argsHelp,"    %-16s %s\n");
     cout << endl;
+  }
+  else if (import->count == 1 && importErrors == 0)
+  {
+    return importYaml(cache, import_comics);
+  }
+  else if (xport->count == 1 && xportErrors == 0)
+  {
+    return exportYaml(cache, xport_comics);
+  }
+  else if (list->count == 1 && listErrors == 0)
+  {
+    cout << "list" << endl;
+    if(list_current->count == 1)
+    {
+      cout << "    " << "current" << endl;
+    }
   }
 
   /* special case: '--version' takes precedence error reporting */

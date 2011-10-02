@@ -22,12 +22,12 @@ Spider::EXCEPTION_CTOR(E_ImgWriteFailed, "Could not write the image(s) to disk a
 Spider::Spider(const std::string& picture_dir, Comic& comic, Cache* cache) throw():
   current_id(comic.current_id),
   current_url(current_url.empty() ? comic.first_url : comic.current_url),
+  done(false),
   cache(cache),
   comic(comic),
   picture_dir(picture_dir + '/' + comic.name),
   img_regex(comic.img_regex),
-  next_regex(comic.next_regex),
-  done(false)
+  next_regex(comic.next_regex)
 {
 }
 
