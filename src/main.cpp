@@ -3,11 +3,9 @@
 #include <argtable2.h>
 #include <iomanip>
 #include "yaml-cpp/yaml.h"
-#include <boost/filesystem.hpp>
 
+#include "files.h"
 #include "spider.h"
-
-namespace fs = boost::filesystem;
 
 int main(int argc, char** argv)
 {
@@ -17,33 +15,18 @@ int main(int argc, char** argv)
   
   std::string env_home = getenv("HOME");
   std::string voodoo_home = env_home + "/.voodoo";
-  std::string cache_file = voodoo_home + "/cache";
 
   Cache* cache = new Cache(voodoo_home, "cache");
 
-  fs::file_status voodoo_status = fs::status(voodoo_home);
-  if(!fs::exists(voodoo_status))
+  try
   {
-    cout << "Creating " << voodoo_home << endl;
-    if(!fs::create_directory(voodoo_home))
-    {
-      cout << "Failed to create " << voodoo_home << endl;
-      return 1;
-    }
+    createFolders(voodoo_home);
+    createCache(cache);
   }
-  fs::file_status cache_status = fs::status(cache_file);
-  if(!fs::exists(cache_status))
+  catch(files::E_CreationFailed e)
   {
-    cout << "Creating a new database." << endl;
-    try
-    {
-      cache->createCacheDb();
-    }
-    catch(Cache::E_CacheDbError e)
-    {
-      cout << "Failed to create a new database." << endl;
-      return 1;
-    }
+    cout << e.what() << endl;
+    return 1;
   }
 
   struct arg_str *help  = arg_strn(NULL,NULL,"help",1,1,NULL);
