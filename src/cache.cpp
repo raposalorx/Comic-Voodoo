@@ -321,7 +321,7 @@ bool Cache::hasComic(const std::string& comic_name) const throw(E_CacheDbError)
   {
     SQLite3Db db(cache_db, SQLITE_OPEN_READONLY);
     SQLite3Stmt stmt(db, "SELECT 1 FROM `" COMIC_TABLE "` WHERE `name`='" + escape(comic_name) + "';");
-    return (stmt.step()) ? true : false;
+    return stmt.step();
   }
   catch (SQLite3Db::E_OpenFailed e)
   { throw E_CacheDbError(cache_db, e.what()); }
