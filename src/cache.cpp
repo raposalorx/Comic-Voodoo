@@ -93,6 +93,8 @@ class SQLite3Stmt
       {
         case SQLITE_OK:
           return true;
+        case SQLITE_ROW:
+          return true;
         case SQLITE_DONE:
           return false;
         default:
