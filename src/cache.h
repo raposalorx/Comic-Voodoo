@@ -25,6 +25,8 @@ class Cache
   public:
     void createCacheDb() const throw(E_CacheDbError);
     void schemaAssert() const throw(E_CacheDbError, E_CacheDbSchemaInvalid);
+
+    std::string getDir() {return cache_db;}
   private:
     const std::string cache_db;
     const std::string cache_dir;
