@@ -12,7 +12,7 @@
 #define STRIP_TABLE   "strips"
 #define STRIP_SCHEMA  "(`id` INTEGER, `comic_name` TEXT, `page` TEXT, `imgs` TEXT)"
 #define COMIC_TABLE   "comics"
-#define COMIC_SCHEMA  "(`name` TEXT PRIMARY KEY,  `base_url` TEXT, `first_url` TEXT, `img_regex` TEXT, `next_regex` TEXT, `end_on_url` INTEGER, `read_end_url` INTEGER, `download_imgs` INTEGER, `mark` INTEGER, `current_url` TEXT, `current_id` TEXT)"
+#define COMIC_SCHEMA  "(`name` TEXT PRIMARY KEY,  `base_url` TEXT, `first_url` TEXT, `img_regex` TEXT, `next_regex` TEXT, `end_on_url` TEXT, `read_end_url` INTEGER, `download_imgs` INTEGER, `mark` INTEGER, `current_url` TEXT, `current_id` INTEGER, `watched` INTEGER)"
 
 
 // --------------------------------------------------------------------------------
@@ -181,7 +181,8 @@ std::string getConfigSQLInsertStr(const Comic& comic) throw()
            "`download_imgs`,"
            "`mark`,"
            "`current_url`,"
-           "`current_id`"
+           "`current_id`,"
+           "`watched`"
          ") "
          "VALUES "
          "("
@@ -195,7 +196,8 @@ std::string getConfigSQLInsertStr(const Comic& comic) throw()
            "'" + escape(intToString(comic.download_imgs)) + "',"
            "'" + escape(intToString(comic.mark))          + "',"
            "'" + escape(comic.current_url)                + "',"
-           "'" + escape(intToString(comic.current_id))    + "'"
+           "'" + escape(intToString(comic.current_id))    + "',"
+           "'" + escape(intToString(comic.watched))       + "'"
          ");";
 }
 
@@ -212,7 +214,8 @@ std::string getConfigSQLSelectStr(const std::string& comic_name) throw()
            "`download_imgs`,"
            "`mark`,"
            "`current_url`,"
-           "`current_id`"
+           "`current_id`,"
+           "`watched`"
            " FROM `" COMIC_TABLE "` "
          "WHERE `name`='" + escape(comic_name) + "';";
 }
@@ -231,7 +234,8 @@ std::string getConfigSQLUpdateStr(const std::string& comic_name, const Comic& co
            "`download_imgs`='"  + escape(intToString(comic.download_imgs))  + "',"
            "`mark`='"           + escape(intToString(comic.mark))           + "',"
            "`current_url`='"    + escape(comic.current_url)                 + "',"
-           "`current_id`='"     + escape(intToString(comic.current_id))     + "'"
+           "`current_id`='"     + escape(intToString(comic.current_id))     + "',"
+           "`current_id`='"     + escape(intToString(comic.watched))        + "'"
          " WHERE `name`='" + escape(comic_name) + "';";
 }
 
@@ -380,6 +384,7 @@ Comic* Cache::getComicConfig(const std::string& comic_name) const throw(E_CacheD
     comic->mark = sqlite3_column_int(stmt, 8);
     comic->current_url.assign((const char*)sqlite3_column_text(stmt, 9));
     comic->current_id = sqlite3_column_int(stmt, 10);
+    comic->watched = sqlite3_column_int(stmt, 11);
 
     return comic.release();
   }

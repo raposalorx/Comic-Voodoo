@@ -43,13 +43,13 @@ void createCache(Cache* cache) throw(files::E_CreationFailed)
 
 int importYaml(Cache* cache, struct arg_file* import_comics)
 {
-    if(import_comics->count > 0)
+  if(import_comics->count > 0)
+  {
+    for(signed int i = 0; i < import_comics->count; i++)
     {
-      for(signed int i = 0; i < import_comics->count; i++)
+      fs::file_status file_status = fs::status(import_comics->filename[i]);
+      if(fs::exists(file_status))
       {
-        fs::file_status file_status = fs::status(import_comics->filename[i]);
-        if(fs::exists(file_status))
-        {
         try 
         {
           const char* configFile = import_comics->filename[i];
@@ -118,6 +118,7 @@ int importYaml(Cache* cache, struct arg_file* import_comics)
               comic.mark = 0;
               comic.current_url = comic.first_url;
               comic.current_id = 0;
+              comic.watched = 0;
               cache->addComic(comic);
             }
             else
@@ -126,6 +127,7 @@ int importYaml(Cache* cache, struct arg_file* import_comics)
               comic.mark = oldcomic->mark;
               comic.current_url = oldcomic->current_url;
               comic.current_id = oldcomic->current_id;
+              comic.watched = oldcomic->watched;
               cache->updateComicConfig(comic.name, comic);
             }
             cout << comic.name << " imported." << endl;
@@ -141,73 +143,73 @@ int importYaml(Cache* cache, struct arg_file* import_comics)
           cout << import_comics->filename[i] << e.what() << "\n";
           return 1;
         }
-        }
-        else
-        {
-          cout << "\"" << import_comics->filename[i] << "\" does not exist." << endl;
-          return 1;
-        }
+      }
+      else
+      {
+        cout << "\"" << import_comics->filename[i] << "\" does not exist." << endl;
+        return 1;
       }
     }
-    else
-    {
-      cout << "You must specify at least one comic file to import." << endl;
-    }
-    return 0;
+  }
+  else
+  {
+    cout << "You must specify at least one comic file to import." << endl;
+  }
+  return 0;
 }
 
 int exportYaml(Cache* cache, struct arg_str* xport_comics)
 {
-    if(xport_comics->count > 0)
+  if(xport_comics->count > 0)
+  {
+    for(signed int i = 0; i < xport_comics->count; i++)
     {
-      for(signed int i = 0; i < xport_comics->count; i++)
+      if(cache->hasComic(xport_comics->sval[i]))
       {
-        if(cache->hasComic(xport_comics->sval[i]))
+        try
         {
-          try
-          {
-            Comic* xport_comic = cache->getComicConfig(xport_comics->sval[i]);
-            YAML::Emitter out;
-            out << YAML::BeginMap;
-            out << YAML::Key << "name";
-            out << YAML::Value << xport_comic->name;
-            out << YAML::Key << "base_url";
-            out << YAML::Value << xport_comic->base_url;
-            out << YAML::Key << "first_url";
-            out << YAML::Value << xport_comic->first_url;
-            out << YAML::Key << "img_regex";
-            out << YAML::Value << xport_comic->img_regex;
-            out << YAML::Key << "next_regex";
-            out << YAML::Value << xport_comic->next_regex;
-            out << YAML::Key << "end_on_url";
-            out << YAML::Value << xport_comic->end_on_url;
-            out << YAML::Key << "read_end_url";
-            out << YAML::Value << xport_comic->read_end_url;
-            out << YAML::Key << "download_imgs";
-            out << YAML::Value << xport_comic->download_imgs;
-            out << YAML::EndMap;
+          Comic* xport_comic = cache->getComicConfig(xport_comics->sval[i]);
+          YAML::Emitter out;
+          out << YAML::BeginMap;
+          out << YAML::Key << "name";
+          out << YAML::Value << xport_comic->name;
+          out << YAML::Key << "base_url";
+          out << YAML::Value << xport_comic->base_url;
+          out << YAML::Key << "first_url";
+          out << YAML::Value << xport_comic->first_url;
+          out << YAML::Key << "img_regex";
+          out << YAML::Value << xport_comic->img_regex;
+          out << YAML::Key << "next_regex";
+          out << YAML::Value << xport_comic->next_regex;
+          out << YAML::Key << "end_on_url";
+          out << YAML::Value << xport_comic->end_on_url;
+          out << YAML::Key << "read_end_url";
+          out << YAML::Value << xport_comic->read_end_url;
+          out << YAML::Key << "download_imgs";
+          out << YAML::Value << xport_comic->download_imgs;
+          out << YAML::EndMap;
 
-            const char* settingsFile = std::string(xport_comic->name + ".yaml").c_str();
-            std::fstream fout(settingsFile, std::ios::out|std::ios::trunc);
-            fout.write(out.c_str(), out.size());
-            fout.close();
-            cout << xport_comic->name << ".yaml has been exported." << endl;
-          }
-          catch(Cache::E_CacheDbError e)
-          {
-            cout << e.what() << endl;
-            return 1;
-          }
+          const char* settingsFile = std::string(xport_comic->name + ".yaml").c_str();
+          std::fstream fout(settingsFile, std::ios::out|std::ios::trunc);
+          fout.write(out.c_str(), out.size());
+          fout.close();
+          cout << xport_comic->name << ".yaml has been exported." << endl;
         }
-        else
+        catch(Cache::E_CacheDbError e)
         {
-          cout << xport_comics->sval[i] << " is not a valid comic name." << endl;
+          cout << e.what() << endl;
+          return 1;
         }
       }
+      else
+      {
+        cout << xport_comics->sval[i] << " is not a valid comic name." << endl;
+      }
     }
-    else
-    {
-      cout << "You must specify at least one comic to export." << endl;
-    }
-    return 0;
+  }
+  else
+  {
+    cout << "You must specify at least one comic to export." << endl;
+  }
+  return 0;
 }

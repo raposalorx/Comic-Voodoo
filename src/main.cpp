@@ -100,7 +100,6 @@ int main(int argc, char** argv)
       }
       */
 
-  /* deallocate each non-null entry in argtable[] */
   arg_freetable(argsImport,sizeof(argsImport)/sizeof(argsImport[0]));
   arg_freetable(argsXport,sizeof(argsXport)/sizeof(argsXport[0]));
   arg_freetable(argsHelp,sizeof(argsHelp)/sizeof(argsHelp[0]));

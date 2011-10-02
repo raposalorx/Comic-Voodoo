@@ -12,8 +12,8 @@ struct Comic
   std::string base_url;
   std::string first_url;
   std::string end_on_url;
-  unsigned short read_end_url;
-  unsigned short download_imgs;
+  bool read_end_url;
+  bool download_imgs;
 
   // Regex
   std::string img_regex;
@@ -21,6 +21,7 @@ struct Comic
 
   // Spider state data
   unsigned short mark;
+  bool watched;
   std::string current_url;
   unsigned short current_id;
   unsigned short instance_start_id;
