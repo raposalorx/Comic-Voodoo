@@ -9,12 +9,6 @@
 
 namespace fs = boost::filesystem;
 
-bool fexists(const char *filename)
-{
-  std::ifstream ifile(filename, std::ifstream::binary);
-  return ifile;
-}
-
 int main(int argc, char** argv)
 {
   using std::cout;
