@@ -59,14 +59,14 @@ int main(int argc, char** argv)
   helpErrors = arg_parse(argc,argv,argsHelp);
 
   struct arg_rex *import  = arg_rex1(NULL,NULL,"import",NULL,0,NULL);
-  struct arg_file *import_comics = arg_filen(NULL,NULL,"FILE", 1, 64, "Yaml comic to import.");
+  struct arg_file *import_comics = arg_filen(NULL,NULL,"FILE", 1, 64, "Yaml file to import.");
   struct arg_end *endimport   = arg_end(20);
   void* argsImport[] = {import, import_comics, endimport};
   int importErrors;
   importErrors = arg_parse(argc,argv,argsImport);
 
   struct arg_rex *xport  = arg_rex1(NULL,NULL,"export",NULL,0,NULL);
-  struct arg_str *xport_comics = arg_strn(NULL,NULL,"COMIC", 1, 64, "TODOcomicname");
+  struct arg_str *xport_comics = arg_strn(NULL,NULL,"COMIC", 1, 64, "Exports COMIC to COMIC.yaml");
   struct arg_end *endxport   = arg_end(20);
   void* argsXport[] = {xport, xport_comics, endxport};
   int xportErrors;
@@ -186,12 +186,52 @@ int main(int argc, char** argv)
   }
   else if (xportErrors == 0)
   {
-    cout << "export: " << endl;
     if(xport_comics->count > 0)
     {
       for(unsigned int i = 0; i < xport_comics->count; i++)
       {
-        cout << "    " << xport_comics->sval[i] << endl;
+        if(cache->hasComic(xport_comics->sval[i]))
+        {
+          try
+          {
+            Comic* xport_comic = cache->getComicConfig(xport_comics->sval[i]);
+            YAML::Emitter out;
+            out << YAML::BeginMap;
+            out << YAML::Key << "name";
+            out << YAML::Value << xport_comic->name;
+            out << YAML::Key << "base_url";
+            out << YAML::Value << xport_comic->base_url;
+            out << YAML::Key << "first_url";
+            out << YAML::Value << xport_comic->first_url;
+            out << YAML::Key << "img_regex";
+            out << YAML::Value << xport_comic->img_regex;
+            out << YAML::Key << "next_regex";
+            out << YAML::Value << xport_comic->next_regex;
+            out << YAML::Key << "end_on_url";
+            out << YAML::Value << xport_comic->end_on_url;
+            out << YAML::Key << "read_end_url";
+            out << YAML::Value << xport_comic->read_end_url;
+            out << YAML::Key << "download_imgs";
+            out << YAML::Value << xport_comic->download_imgs;
+            out << YAML::EndMap;
+
+            const char* settingsFile = std::string(xport_comic->name + ".yaml").c_str();
+            std::fstream fout(settingsFile, std::ios::out|std::ios::trunc);
+            // cout << "saving: " << strcomb(4, folder.c_str(), "/comics/", comic.name.c_str(), "/settings.yaml") << endl;
+            fout.write(out.c_str(), out.size());
+            fout.close();
+            cout << xport_comic->name << ".yaml has been exported." << endl;
+          }
+          catch(Cache::E_CacheDbError e)
+          {
+            cout << e.what() << endl;
+            return 1;
+          }
+        }
+        else
+        {
+          cout << xport_comics->sval[i] << " is not a valid comic name." << endl;
+        }
       }
     }
     else
@@ -220,9 +260,9 @@ int main(int argc, char** argv)
     arg_print_syntax(stdout,argsHelp,"\n");
     //        printf("Echo the STRINGs to standard output.\n\n");
     cout << "\nDescriptions:" << endl;
-    cout << "  import" << setw(13) << "" << "blah\n";//"Imports a comic file (ending in .yaml) to the database." << "\n";
+    cout << "  import" << setw(13) << "" << "Import a comic from a yaml file.\n";//"Imports a comic file (ending in .yaml) to the database." << "\n";
     arg_print_glossary(stdout,argsImport,"    %-16s %s\n");
-    cout << "  export" << setw(13) << "" << "HOLY SHIT!" << "\n";
+    cout << "  export" << setw(13) << "" << "Export a comic to a yaml file.\n";
     arg_print_glossary(stdout,argsXport,"    %-16s %s\n");
     cout << "  list" << setw(15) << "" << "HOLY SHIT!" << "\n";
     arg_print_glossary(stdout,argsList,"    %-16s %s\n");
