@@ -10,4 +10,5 @@ struct Strip
   std::string page;
   std::string imgs;
 };
+
 #endif // STRIP_H

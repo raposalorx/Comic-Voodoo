@@ -1,13 +1,13 @@
 #ifndef COMIC_H
 #define COMIC_H
 
-#include <string>
 #include <queue>
 #include <pcrecpp.h>
+#include <string>
 
 struct Comic
 {
-  // config
+  // Config
   std::string name;
   std::string base_url;
   std::string first_url;
@@ -15,16 +15,17 @@ struct Comic
   unsigned short read_end_url;
   unsigned short download_imgs;
 
-  // vars
+  // Regex
+  std::string img_regex;
+  std::string next_regex;
+
+  // Spider state data
   unsigned short mark;
   std::string current_url;
   unsigned short current_id;
-  /*const*/ unsigned short instance_start_id;
+  unsigned short instance_start_id;
   std::queue<std::string> new_imgs;
   std::queue<std::string> new_urls;
-  
-  std::string img_regex;
-  std::string next_regex;
 };
 
 #endif // COMIC_H

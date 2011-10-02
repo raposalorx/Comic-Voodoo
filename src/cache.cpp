@@ -7,12 +7,12 @@
 #include "comic.h"
 #include "strip.h"
 
-#define CONFIG_TABLE   "options"
-#define CONFIG_SCHEMA  "(`option` TEXT, `value` TEXT)"
+#define CONFIG_TABLE  "options"
+#define CONFIG_SCHEMA "(`option` TEXT, `value` TEXT)"
 #define STRIP_TABLE   "strips"
 #define STRIP_SCHEMA  "(`id` INTEGER, `comic_name` TEXT, `page` TEXT, `imgs` TEXT)"
-#define COMIC_TABLE  "comics"
-#define COMIC_SCHEMA "(`name` TEXT PRIMARY KEY,  `base_url` TEXT, `first_url` TEXT, `img_regex` TEXT, `next_regex` TEXT, `end_on_url` INTEGER, `read_end_url` INTEGER, `download_imgs` INTEGER, `mark` INTEGER, `current_url` TEXT, `current_id` TEXT)"
+#define COMIC_TABLE   "comics"
+#define COMIC_SCHEMA  "(`name` TEXT PRIMARY KEY,  `base_url` TEXT, `first_url` TEXT, `img_regex` TEXT, `next_regex` TEXT, `end_on_url` INTEGER, `read_end_url` INTEGER, `download_imgs` INTEGER, `mark` INTEGER, `current_url` TEXT, `current_id` TEXT)"
 
 
 // --------------------------------------------------------------------------------
@@ -317,9 +317,7 @@ bool Cache::hasComic(const std::string& comic_name) const throw(E_CacheDbError)
   {
     SQLite3Db db(cache_db, SQLITE_OPEN_READONLY);
     SQLite3Stmt stmt(db, "SELECT 1 FROM `" COMIC_TABLE "` WHERE `name`='" + escape(comic_name) + "';");
-    stmt.step();
-    const char* result = (const char*)sqlite3_column_text(stmt, 0);
-    return (result != NULL && !std::string(result).empty());
+    return (stmt.step()) ? true : false;
   }
   catch (SQLite3Db::E_OpenFailed e)
   { throw E_CacheDbError(cache_db, e.what()); }
