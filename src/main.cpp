@@ -49,8 +49,9 @@ int main(int argc, char** argv)
 
   struct arg_rex *list  = arg_rex1(NULL,NULL,"list",NULL,0,NULL);
   struct arg_lit *list_current = arg_lit0("c","current","TODOcurrent");
+  struct arg_str *list_comic = arg_str1(NULL,NULL,"COMIC", "TODOcomics");
   struct arg_end *endlist   = arg_end(20);
-  void* argsList[] = {list, list_current, endlist};
+  void* argsList[] = {list, list_current, list_comic, endlist};
   int listErrors;
   listErrors = arg_parse(argc,argv,argsList);
 
@@ -86,9 +87,19 @@ int main(int argc, char** argv)
   else if (list->count == 1 && listErrors == 0)
   {
     cout << "list" << endl;
+    std::vector<Comic*>* comics;
     if(list_current->count == 1)
     {
       cout << "    " << "current" << endl;
+      comics = cache->searchComics(list_comic->sval[0], 1);
+    }
+    else
+    {
+      comics = cache->searchComics(list_comic->sval[0], 0);
+    }
+    for(int i = 0; i < comics->size(); i++)
+    {
+      cout << "\"" << comics->at(i)->name << "\"" << endl;
     }
   }
 

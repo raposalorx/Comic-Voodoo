@@ -2,6 +2,7 @@
 #define CACHE_H
 
 #include <string>
+#include <vector>
 
 #include "exception.h"
 
@@ -38,6 +39,8 @@ class Cache
     void remComic(const std::string&) const throw(E_CacheDbError);
     Comic* getComicConfig(const std::string&) const throw(E_CacheDbError, E_NoComicConfigFound);
     void updateComicConfig(const std::string&, const Comic&) const throw(E_CacheDbError);
+
+    std::vector<Comic*>* searchComics(const std::string&, bool) const throw(E_CacheDbError);
 
   // Strips
   public:

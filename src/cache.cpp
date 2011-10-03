@@ -411,6 +411,44 @@ void Cache::updateComicConfig(const std::string& comic_name, const Comic& comic)
   { throw E_CacheDbError(cache_db, e.what()); }
 }
 
+std::vector<Comic*>* Cache::searchComics(const std::string& comic_name, bool watched) const throw(E_CacheDbError)
+{
+  try
+  {
+    std::auto_ptr<std::vector<Comic*> > comics(new std::vector<Comic*>);
+    std::vector<std::string> names;
+
+    {
+      SQLite3Db db(cache_db, SQLITE_OPEN_READONLY);
+      std::string query;
+      if(!watched)
+        query = "SELECT * FROM `" COMIC_TABLE "` WHERE `name` LIKE '" + escape(comic_name) + "%';";
+      else
+        query = "SELECT * FROM `" COMIC_TABLE "` WHERE `name` LIKE '" + escape(comic_name) + "%' AND `watched`<>'0';";
+      SQLite3Stmt stmt(db, query);
+      if (!stmt.step())
+        return comics.release();
+      
+      for(int i = 0;i < sqlite3_column_count(stmt);i++)
+      {
+        names.push_back((const char*)sqlite3_column_text(stmt, 0));
+        if (!stmt.step())
+          break;
+      }
+    }
+    for(int i = 0; i < names.size(); i++)
+    {
+      comics->push_back(getComicConfig(names[i]));
+    }
+    return comics.release();
+  }
+  catch (SQLite3Db::E_OpenFailed e)
+  { throw E_CacheDbError(cache_db,  e.what()); }
+  catch (SQLite3Stmt::E_PrepareFailed e)
+  { throw E_CacheDbError(cache_db, e.what()); }
+  catch (SQLite3Stmt::E_StepFailed e)
+  { throw E_CacheDbError(cache_db, e.what()); }
+}
 
 // --------------------------------------------------------------------------------
 //  Strips
