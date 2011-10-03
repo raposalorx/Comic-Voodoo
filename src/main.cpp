@@ -4,6 +4,7 @@
 
 #include "files.h"
 #include "spider.h"
+#include "comhelp.h"
 
 int main(int argc, char** argv)
 {
@@ -27,27 +28,27 @@ int main(int argc, char** argv)
     return 1;
   }
 
-  struct arg_rex *help  = arg_rex1(NULL,NULL,"help",NULL,0,NULL);
+  struct arg_rex *help  = arg_rex1(NULL,NULL,"^help",NULL,0,NULL);
   struct arg_end *endhelp   = arg_end(20);
   void* argsHelp[] = {help, endhelp};
   int helpErrors;
   helpErrors = arg_parse(argc,argv,argsHelp);
 
-  struct arg_rex *import  = arg_rex1(NULL,NULL,"import",NULL,0,NULL);
+  struct arg_rex *import  = arg_rex1(NULL,NULL,"^import",NULL,0,NULL);
   struct arg_file *import_comics = arg_filen(NULL,NULL,"FILE", 1, 64, "Yaml file to import.");
   struct arg_end *endimport   = arg_end(20);
   void* argsImport[] = {import, import_comics, endimport};
   int importErrors;
   importErrors = arg_parse(argc,argv,argsImport);
 
-  struct arg_rex *xport  = arg_rex1(NULL,NULL,"export",NULL,0,NULL);
+  struct arg_rex *xport  = arg_rex1(NULL,NULL,"^export",NULL,0,NULL);
   struct arg_str *xport_comics = arg_strn(NULL,NULL,"COMIC", 1, 64, "Exports COMIC to COMIC.yaml");
   struct arg_end *endxport   = arg_end(20);
   void* argsXport[] = {xport, xport_comics, endxport};
   int xportErrors;
   xportErrors = arg_parse(argc,argv,argsXport);
 
-  struct arg_rex *list  = arg_rex1(NULL,NULL,"list",NULL,0,NULL);
+  struct arg_rex *list  = arg_rex1(NULL,NULL,"^list",NULL,0,NULL);
   struct arg_lit *list_watched = arg_lit0("w","watched","Only search watched comics.");
   struct arg_str *list_comic = arg_str0(NULL,NULL,"QUERY", "Search for comics starting with QUERY.");
   struct arg_end *endlist   = arg_end(20);
@@ -55,14 +56,14 @@ int main(int argc, char** argv)
   int listErrors;
   listErrors = arg_parse(argc,argv,argsList);
 
-  struct arg_rex *watch  = arg_rex1(NULL,NULL,"watch",NULL,0,NULL);
+  struct arg_rex *watch  = arg_rex1(NULL,NULL,"^watch",NULL,0,NULL);
   struct arg_str *watch_comic = arg_str0(NULL,NULL,"COMIC", "Start following COMIC.");
   struct arg_end *endwatch   = arg_end(20);
   void* argsWatch[] = {watch, watch_comic, endwatch};
   int watchErrors;
   watchErrors = arg_parse(argc,argv,argsWatch);
 
-  struct arg_rex *unwatch  = arg_rex1(NULL,NULL,"unwatch",NULL,0,NULL);
+  struct arg_rex *unwatch  = arg_rex1(NULL,NULL,"^unwatch",NULL,0,NULL);
   struct arg_str *unwatch_comic = arg_str0(NULL,NULL,"COMIC", "Stop following COMIC.");
   struct arg_end *endunwatch   = arg_end(20);
   void* argsUnwatch[] = {unwatch, unwatch_comic, endunwatch};
@@ -122,9 +123,37 @@ int main(int argc, char** argv)
   }
   else if (watch->count == 1 && watchErrors == 0)
   {
+    Comic* comic = comicLookup(cache, watch_comic->sval[0], 0);
+    if(comic != NULL)
+    {
+      if(comic->watched)
+      {
+        cout << "\"" << comic->name << "\" is already being watched." << endl;
+      }
+      else
+      {
+        comic->watched = true;
+        cache->updateComicConfig(*comic);
+        cout << "Watching " << comic->name << endl;
+      }
+    }
   }
   else if (unwatch->count == 1 && unwatchErrors == 0)
   {
+    Comic* comic = comicLookup(cache, unwatch_comic->sval[0], 0);
+    if(comic != NULL)
+    {
+      if(!comic->watched)
+      {
+        cout << "\"" << comic->name << "\" isn't watched." << endl;
+      }
+      else
+      {
+        comic->watched = false;
+        cache->updateComicConfig(*comic);
+        cout << "No longer watching " << comic->name << endl;
+      }
+    }
   }
 
   /* special case: '--version' takes precedence error reporting */

@@ -235,7 +235,7 @@ std::string getConfigSQLUpdateStr(const Comic& comic) throw()
            "`mark`='"           + escape(intToString(comic.mark))           + "',"
            "`current_url`='"    + escape(comic.current_url)                 + "',"
            "`current_id`='"     + escape(intToString(comic.current_id))     + "',"
-           "`current_id`='"     + escape(intToString(comic.watched))        + "'"
+           "`watched`='"     + escape(intToString(comic.watched))        + "'"
          " WHERE `name`='" + escape(comic.name) + "';";
 }
 
@@ -396,7 +396,7 @@ Comic* Cache::getComicConfig(const std::string& comic_name) const throw(E_CacheD
   { throw E_CacheDbError(cache_db, e.what()); }
 }
 
-void Cache::updateComicConfig(const std::string& comic_name, const Comic& comic) const throw(E_CacheDbError)
+void Cache::updateComicConfig(const Comic& comic) const throw(E_CacheDbError)
 {
   try
   {

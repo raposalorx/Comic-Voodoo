@@ -129,7 +129,7 @@ int importYaml(Cache* cache, struct arg_file* import_comics)
               comic.current_url = oldcomic->current_url;
               comic.current_id = oldcomic->current_id;
               comic.watched = oldcomic->watched;
-              cache->updateComicConfig(comic.name, comic);
+              cache->updateComicConfig(comic);
             }
             cout << comic.name << " imported." << endl;
           }

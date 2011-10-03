@@ -38,7 +38,7 @@ class Cache
     void addComic(const Comic&) const throw(E_CacheDbError);
     void remComic(const std::string&) const throw(E_CacheDbError);
     Comic* getComicConfig(const std::string&) const throw(E_CacheDbError, E_NoComicConfigFound);
-    void updateComicConfig(const std::string&, const Comic&) const throw(E_CacheDbError);
+    void updateComicConfig(const Comic&) const throw(E_CacheDbError);
 
     std::vector<Comic*>* searchComics(const std::string&, bool) const throw(E_CacheDbError);
 
