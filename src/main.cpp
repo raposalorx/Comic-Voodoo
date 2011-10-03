@@ -55,6 +55,20 @@ int main(int argc, char** argv)
   int listErrors;
   listErrors = arg_parse(argc,argv,argsList);
 
+  struct arg_rex *watch  = arg_rex1(NULL,NULL,"watch",NULL,0,NULL);
+  struct arg_str *watch_comic = arg_str0(NULL,NULL,"COMIC", "Start following COMIC.");
+  struct arg_end *endwatch   = arg_end(20);
+  void* argsWatch[] = {watch, watch_comic, endwatch};
+  int watchErrors;
+  watchErrors = arg_parse(argc,argv,argsWatch);
+
+  struct arg_rex *unwatch  = arg_rex1(NULL,NULL,"unwatch",NULL,0,NULL);
+  struct arg_str *unwatch_comic = arg_str0(NULL,NULL,"COMIC", "Stop following COMIC.");
+  struct arg_end *endunwatch   = arg_end(20);
+  void* argsUnwatch[] = {unwatch, unwatch_comic, endunwatch};
+  int unwatchErrors;
+  unwatchErrors = arg_parse(argc,argv,argsUnwatch);
+
 
   if (help->count > 0 && helpErrors == 0)
   {
@@ -63,6 +77,8 @@ int main(int argc, char** argv)
     arg_print_syntax(stdout,argsImport,"\n");
     arg_print_syntax(stdout,argsXport,"\n");
     arg_print_syntax(stdout,argsList,"\n");
+    arg_print_syntax(stdout,argsWatch,"\n");
+    arg_print_syntax(stdout,argsUnwatch,"\n");
     arg_print_syntax(stdout,argsHelp,"\n");
     
     cout << "\nDescriptions:" << endl;
@@ -72,6 +88,10 @@ int main(int argc, char** argv)
     arg_print_glossary(stdout,argsXport,"    %-16s %s\n");
     cout << "  list" << setw(15) << "" << "Search the comic database." << "\n";
     arg_print_glossary(stdout,argsList,"    %-16s %s\n");
+    cout << "  watch" << setw(14) << "" << "Start following a comic." << "\n";
+    arg_print_glossary(stdout,argsWatch,"    %-16s %s\n");
+    cout << "  unwatch" << setw(12) << "" << "Stop following a comic." << "\n";
+    arg_print_glossary(stdout,argsUnwatch,"    %-16s %s\n");
     cout << "  help" << setw(15) << "" << "Show this help dialog." << "\n";
     arg_print_glossary(stdout,argsHelp,"    %-16s %s\n");
     cout << endl;
@@ -100,6 +120,12 @@ int main(int argc, char** argv)
       cout << "\"" << comics->at(i)->name << "\"" << endl;
     }
   }
+  else if (watch->count == 1 && watchErrors == 0)
+  {
+  }
+  else if (unwatch->count == 1 && unwatchErrors == 0)
+  {
+  }
 
   /* special case: '--version' takes precedence error reporting */
   /*	else if (vers->count > 0)
@@ -113,6 +139,8 @@ int main(int argc, char** argv)
   arg_freetable(argsXport,sizeof(argsXport)/sizeof(argsXport[0]));
   arg_freetable(argsList,sizeof(argsList)/sizeof(argsList[0]));
   arg_freetable(argsHelp,sizeof(argsHelp)/sizeof(argsHelp[0]));
+  arg_freetable(argsWatch,sizeof(argsWatch)/sizeof(argsWatch[0]));
+  arg_freetable(argsUnwatch,sizeof(argsUnwatch)/sizeof(argsUnwatch[0]));
 
   delete cache;
 

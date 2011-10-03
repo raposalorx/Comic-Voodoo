@@ -220,7 +220,7 @@ std::string getConfigSQLSelectStr(const std::string& comic_name) throw()
          "WHERE `name`='" + escape(comic_name) + "';";
 }
 
-std::string getConfigSQLUpdateStr(const std::string& comic_name, const Comic& comic) throw()
+std::string getConfigSQLUpdateStr(const Comic& comic) throw()
 {
   return "UPDATE `" COMIC_TABLE "` "
          "SET "
@@ -236,7 +236,7 @@ std::string getConfigSQLUpdateStr(const std::string& comic_name, const Comic& co
            "`current_url`='"    + escape(comic.current_url)                 + "',"
            "`current_id`='"     + escape(intToString(comic.current_id))     + "',"
            "`current_id`='"     + escape(intToString(comic.watched))        + "'"
-         " WHERE `name`='" + escape(comic_name) + "';";
+         " WHERE `name`='" + escape(comic.name) + "';";
 }
 
 
@@ -401,7 +401,7 @@ void Cache::updateComicConfig(const std::string& comic_name, const Comic& comic)
   try
   {
     SQLite3Db db(cache_db, SQLITE_OPEN_READWRITE);
-    SQLite3Stmt(db, getConfigSQLUpdateStr(comic_name, comic)).step();
+    SQLite3Stmt(db, getConfigSQLUpdateStr(comic)).step();
   }
   catch (SQLite3Db::E_OpenFailed e)
   { throw E_CacheDbError(cache_db, e.what()); }
