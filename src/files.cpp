@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include "comic.h"
+#include "comhelp.h"
 
 namespace fs = boost::filesystem;
 
@@ -166,10 +167,9 @@ int exportYaml(Cache* cache, struct arg_str* xport_comics)
     {
       try
       {
-        std::vector<Comic*>* comics = cache->searchComics(xport_comics->sval[i], 0);
-        if(comics->size()==1)
+        Comic* xport_comic = comicLookup(cache, xport_comics->sval[i], 0);
+        if(xport_comic != NULL)
         {
-          Comic* xport_comic = comics->at(0);
           YAML::Emitter out;
           out << YAML::BeginMap;
           out << YAML::Key << "name";
@@ -195,19 +195,6 @@ int exportYaml(Cache* cache, struct arg_str* xport_comics)
           fout.write(out.c_str(), out.size());
           fout.close();
           cout << xport_comic->name << ".yaml has been exported." << endl;
-        }
-        else if(comics->size()==0)
-        {
-          cout << xport_comics->sval[i] << " is not a valid comic name." << endl;
-        }
-        else
-        {
-          cout << "Ambiguous name. Please narrow the search to one of the following:\n";
-          for(unsigned int i = 0; i < comics->size(); i++)
-          {
-            cout << comics->at(i)->name << "\n";
-          }
-          cout << endl;
         }
       }
       catch(Cache::E_CacheDbError e)

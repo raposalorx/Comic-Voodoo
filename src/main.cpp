@@ -113,6 +113,7 @@ int main(int argc, char** argv)
 
   arg_freetable(argsImport,sizeof(argsImport)/sizeof(argsImport[0]));
   arg_freetable(argsXport,sizeof(argsXport)/sizeof(argsXport[0]));
+  arg_freetable(argsList,sizeof(argsList)/sizeof(argsList[0]));
   arg_freetable(argsHelp,sizeof(argsHelp)/sizeof(argsHelp[0]));
 
   delete cache;

@@ -1,3 +1,6 @@
+#ifndef FILES_H
+#define FILES_H
+
 #include <boost/filesystem.hpp>
 #include <string>
 #include <argtable2.h>
@@ -18,3 +21,5 @@ void createCache(Cache*) throw(files::E_CreationFailed);
 int importYaml(Cache*, struct arg_file*);
 
 int exportYaml(Cache*, struct arg_str*);
+
+#endif
