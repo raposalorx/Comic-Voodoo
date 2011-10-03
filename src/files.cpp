@@ -164,11 +164,12 @@ int exportYaml(Cache* cache, struct arg_str* xport_comics)
   {
     for(signed int i = 0; i < xport_comics->count; i++)
     {
-      if(cache->hasComic(xport_comics->sval[i]))
+      try
       {
-        try
+        std::vector<Comic*>* comics = cache->searchComics(xport_comics->sval[i], 0);
+        if(comics->size()==1)
         {
-          Comic* xport_comic = cache->getComicConfig(xport_comics->sval[i]);
+          Comic* xport_comic = comics->at(0);
           YAML::Emitter out;
           out << YAML::BeginMap;
           out << YAML::Key << "name";
@@ -195,15 +196,24 @@ int exportYaml(Cache* cache, struct arg_str* xport_comics)
           fout.close();
           cout << xport_comic->name << ".yaml has been exported." << endl;
         }
-        catch(Cache::E_CacheDbError e)
+        else if(comics->size()==0)
         {
-          cout << e.what() << endl;
-          return 1;
+          cout << xport_comics->sval[i] << " is not a valid comic name." << endl;
+        }
+        else
+        {
+          cout << "Ambiguous name. Please narrow the search to one of the following:\n";
+          for(unsigned int i = 0; i < comics->size(); i++)
+          {
+            cout << comics->at(i)->name << "\n";
+          }
+          cout << endl;
         }
       }
-      else
+      catch(Cache::E_CacheDbError e)
       {
-        cout << xport_comics->sval[i] << " is not a valid comic name." << endl;
+        cout << e.what() << endl;
+        return 1;
       }
     }
   }
