@@ -86,11 +86,9 @@ int main(int argc, char** argv)
   }
   else if (list->count == 1 && listErrors == 0)
   {
-    cout << "list" << endl;
     std::vector<Comic*>* comics;
     if(list_watched->count == 1)
     {
-      cout << "    " << "current" << endl;
       comics = cache->searchComics(list_comic->sval[0], 1);
     }
     else
