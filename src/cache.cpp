@@ -436,7 +436,7 @@ std::vector<Comic*>* Cache::searchComics(const std::string& comic_name, bool wat
           break;
       }
     }
-    for(int i = 0; i < names.size(); i++)
+    for(unsigned int i = 0; i < names.size(); i++)
     {
       comics->push_back(getComicConfig(names[i]));
     }

@@ -48,10 +48,10 @@ int main(int argc, char** argv)
   xportErrors = arg_parse(argc,argv,argsXport);
 
   struct arg_rex *list  = arg_rex1(NULL,NULL,"list",NULL,0,NULL);
-  struct arg_lit *list_current = arg_lit0("c","current","TODOcurrent");
-  struct arg_str *list_comic = arg_str1(NULL,NULL,"COMIC", "TODOcomics");
+  struct arg_lit *list_watched = arg_lit0("w","watched","Only search watched comics.");
+  struct arg_str *list_comic = arg_str0(NULL,NULL,"QUERY", "Search for comics starting with QUERY.");
   struct arg_end *endlist   = arg_end(20);
-  void* argsList[] = {list, list_current, list_comic, endlist};
+  void* argsList[] = {list, list_watched, list_comic, endlist};
   int listErrors;
   listErrors = arg_parse(argc,argv,argsList);
 
@@ -70,9 +70,9 @@ int main(int argc, char** argv)
     arg_print_glossary(stdout,argsImport,"    %-16s %s\n");
     cout << "  export" << setw(13) << "" << "Export a comic to a yaml file.\n";
     arg_print_glossary(stdout,argsXport,"    %-16s %s\n");
-    cout << "  list" << setw(15) << "" << "HOLY SHIT!" << "\n";
+    cout << "  list" << setw(15) << "" << "Search the comic database." << "\n";
     arg_print_glossary(stdout,argsList,"    %-16s %s\n");
-    cout << "  help" << setw(15) << "" << "HOLY SHIT!" << "\n";
+    cout << "  help" << setw(15) << "" << "Show this help dialog." << "\n";
     arg_print_glossary(stdout,argsHelp,"    %-16s %s\n");
     cout << endl;
   }
@@ -88,7 +88,7 @@ int main(int argc, char** argv)
   {
     cout << "list" << endl;
     std::vector<Comic*>* comics;
-    if(list_current->count == 1)
+    if(list_watched->count == 1)
     {
       cout << "    " << "current" << endl;
       comics = cache->searchComics(list_comic->sval[0], 1);
@@ -97,7 +97,7 @@ int main(int argc, char** argv)
     {
       comics = cache->searchComics(list_comic->sval[0], 0);
     }
-    for(int i = 0; i < comics->size(); i++)
+    for(unsigned int i = 0; i < comics->size(); i++)
     {
       cout << "\"" << comics->at(i)->name << "\"" << endl;
     }
