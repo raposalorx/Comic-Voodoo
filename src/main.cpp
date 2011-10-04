@@ -89,6 +89,7 @@ int main(int argc, char** argv)
     arg_print_syntax(stdout,argsList,"\n");
     arg_print_syntax(stdout,argsWatch,"\n");
     arg_print_syntax(stdout,argsUnwatch,"\n");
+    arg_print_syntax(stdout,argsFetch,"\n");
     arg_print_syntax(stdout,argsHelp,"\n");
     
     cout << "\nDescriptions:" << endl;
