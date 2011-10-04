@@ -273,6 +273,7 @@ void Cache::createCacheDb() const throw(E_CacheDbError)
     SQLite3Db db(cache_db, SQLITE_OPEN_READWRITE|SQLITE_OPEN_CREATE);
     SQLite3Stmt(db, "CREATE TABLE " STRIP_TABLE STRIP_SCHEMA ";").step();
     SQLite3Stmt(db, "CREATE TABLE " COMIC_TABLE COMIC_SCHEMA ";").step();
+    SQLite3Stmt(db, "CREATE TABLE " CONFIG_TABLE CONFIG_SCHEMA ";").step();
   }
   catch (SQLite3Db::E_OpenFailed e)
   { throw E_CacheDbError(cache_db,  e.what()); }
@@ -288,17 +289,24 @@ void Cache::schemaAssert() const throw(E_CacheDbError, E_CacheDbSchemaInvalid)
   {
     SQLite3Db db(cache_db, SQLITE_OPEN_READONLY);
 
-    // Assert that the comics table exists and is valid
+    // Assert that the strip table exists and is valid
     {
       SQLite3Stmt stmt(db, "SELECT `sql` FROM `sqlite_master` WHERE `tbl_name`='" STRIP_TABLE "';");
       if (!stmt.step() || std::string((const char*)sqlite3_column_text(stmt, 0)) != "CREATE TABLE " STRIP_TABLE STRIP_SCHEMA)
         throw E_CacheDbSchemaInvalid(cache_db);
     }
 
-    // Assert that the config table exists and is valid
+    // Assert that the comic table exists and is valid
     {
       SQLite3Stmt stmt(db, "SELECT `sql` FROM `sqlite_master` WHERE `tbl_name`='" COMIC_TABLE "';");
       if (!stmt.step() || std::string((const char*)sqlite3_column_text(stmt, 0)) != "CREATE TABLE " COMIC_TABLE COMIC_SCHEMA)
+        throw E_CacheDbSchemaInvalid(cache_db);
+    }
+
+    // Assert that the config table exists and is valid
+    {
+      SQLite3Stmt stmt(db, "SELECT `sql` FROM `sqlite_master` WHERE `tbl_name`='" CONFIG_TABLE "';");
+      if (!stmt.step() || std::string((const char*)sqlite3_column_text(stmt, 0)) != "CREATE TABLE " CONFIG_TABLE CONFIG_SCHEMA)
         throw E_CacheDbSchemaInvalid(cache_db);
     }
   }
@@ -517,14 +525,14 @@ Strip* Cache::getStrip(int id, const std::string& comic_name) const throw(E_Cach
     strip->page.assign((const char*)sqlite3_column_text(stmt, 2));
     strip->imgs.assign((const char*)sqlite3_column_text(stmt, 3));
 
-    return strip.release();
+     return strip.release();
   }
   catch (SQLite3Db::E_OpenFailed e)
   { throw E_CacheDbError(cache_db,  e.what()); }
   catch (SQLite3Stmt::E_PrepareFailed e)
   { throw E_CacheDbError(cache_db, e.what()); }
   catch (SQLite3Stmt::E_StepFailed e)
-  { throw E_CacheDbError(cache_db, e.what()); }
+   { throw E_CacheDbError(cache_db, e.what()); }
 }
 
 void Cache::updateStrip(const Strip& strip) const throw(E_CacheDbError)
@@ -540,4 +548,33 @@ void Cache::updateStrip(const Strip& strip) const throw(E_CacheDbError)
   { throw E_CacheDbError(cache_db, e.what()); }
   catch (SQLite3Stmt::E_StepFailed e)
   { throw E_CacheDbError(cache_db, e.what()); }
+}
+
+// --------------------------------------------------------------------------------
+//  Config
+// --------------------------------------------------------------------------------
+
+std::string Cache::getOption(const std::string& option) const
+{
+  SQLite3Db db(cache_db, SQLITE_OPEN_READONLY);
+  SQLite3Stmt stmt(db, "SELECT `value` FROM `" CONFIG_TABLE "` WHERE `option`='" + escape(option) + "';");
+  if (!stmt.step())
+    return "";
+
+  std::string value = ((const char*)sqlite3_column_text(stmt, 0));
+  return value;
+}
+
+void Cache::setOption(const std::string& option, const std::string& value)
+{
+  if(getOption(option) != "")
+  {
+    SQLite3Db db(cache_db, SQLITE_OPEN_READWRITE);
+    SQLite3Stmt(db, "UPDATE `" CONFIG_TABLE "` SET `value`='" + escape(value) + "' WHERE `option`='" + escape(option) + "';").step();
+  }
+  else
+  {
+    SQLite3Db db(cache_db, SQLITE_OPEN_READWRITE);
+    SQLite3Stmt(db, "INSERT INTO `" CONFIG_TABLE "` VALUES ('" + escape(option) + "','" + escape(value) + "');").step();
+  }
 }

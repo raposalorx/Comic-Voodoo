@@ -79,6 +79,14 @@ int main(int argc, char** argv)
   int fetchErrors;
   fetchErrors = arg_parse(argc,argv,argsFetch);
 
+  struct arg_rex *set  = arg_rex1(NULL,NULL,"^set",NULL,0,NULL);
+  struct arg_str *set_option = arg_str1(NULL,NULL,"OPTION", "Option to set.");
+  struct arg_str *set_value = arg_str0(NULL,NULL,"VALUE", "Option's new value.");
+  struct arg_end *endset   = arg_end(20);
+  void* argsSet[] = {set, set_option, set_value, endset};
+  int setErrors;
+  setErrors = arg_parse(argc,argv,argsSet);
+
 
   if (help->count > 0 && helpErrors == 0)
   {
@@ -90,6 +98,7 @@ int main(int argc, char** argv)
     arg_print_syntax(stdout,argsWatch,"\n");
     arg_print_syntax(stdout,argsUnwatch,"\n");
     arg_print_syntax(stdout,argsFetch,"\n");
+    arg_print_syntax(stdout,argsSet,"\n");
     arg_print_syntax(stdout,argsHelp,"\n");
     
     cout << "\nDescriptions:" << endl;
@@ -105,6 +114,8 @@ int main(int argc, char** argv)
     arg_print_glossary(stdout,argsUnwatch,"    %-16s %s\n");
     cout << "  fetch" << setw(14) << "" << "Fetch watched comics." << "\n";
     arg_print_glossary(stdout,argsFetch,"    %-16s %s\n");
+    cout << "  set" << setw(16) << "" << "Set global options." << "\n";
+    arg_print_glossary(stdout,argsSet,"    %-16s %s\n");
     cout << "  help" << setw(15) << "" << "Show this help dialog." << "\n";
     arg_print_glossary(stdout,argsHelp,"    %-16s %s\n");
     cout << endl;
@@ -215,6 +226,26 @@ int main(int argc, char** argv)
       else
       {
         cout << "You must specify at least one comic to fetch, or use --all." << endl;
+      }
+    }
+  }
+  else if (set->count == 1 && setErrors == 0)
+  {
+    if(set_value->count == 1)
+    {
+      cache->setOption(set_option->sval[0], set_value->sval[0]);
+      cout << set_option->sval[0] << " = " << set_value->sval[0] << endl;
+    }
+    else
+    {
+      std::string value = cache->getOption(set_option->sval[0]);
+      if(value=="")
+      {
+        cout << set_option->sval[0] << " is unset." << endl;
+      }
+      else
+      {
+        cout << set_option->sval[0] << " = " << value << endl;
       }
     }
   }
