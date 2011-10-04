@@ -72,8 +72,8 @@ int main(int argc, char** argv)
   unwatchErrors = arg_parse(argc,argv,argsUnwatch);
 
   struct arg_rex *fetch  = arg_rex1(NULL,NULL,"^fetch",NULL,0,NULL);
-  struct arg_str *fetch_comics = arg_strn(NULL,NULL,"COMIC", 0, 64, "blah");
-  struct arg_lit *fetch_all = arg_lit0("a","all","blah");
+  struct arg_str *fetch_comics = arg_strn(NULL,NULL,"COMIC", 0, 64, "Fetch the watched comic COMIC.");
+  struct arg_lit *fetch_all = arg_lit0("a","all","Fetch all watched comics.");
   struct arg_end *endfetch   = arg_end(20);
   void* argsFetch[] = {fetch, fetch_comics, fetch_all, endfetch};
   int fetchErrors;
@@ -102,6 +102,8 @@ int main(int argc, char** argv)
     arg_print_glossary(stdout,argsWatch,"    %-16s %s\n");
     cout << "  unwatch" << setw(12) << "" << "Stop following a comic." << "\n";
     arg_print_glossary(stdout,argsUnwatch,"    %-16s %s\n");
+    cout << "  fetch" << setw(14) << "" << "Fetch watched comics." << "\n";
+    arg_print_glossary(stdout,argsFetch,"    %-16s %s\n");
     cout << "  help" << setw(15) << "" << "Show this help dialog." << "\n";
     arg_print_glossary(stdout,argsHelp,"    %-16s %s\n");
     cout << endl;
@@ -182,7 +184,6 @@ int main(int argc, char** argv)
       if(fetch_comics->count > 0)
       {
         std::vector<Comic*> comics;
-        //      comics = cache->searchComics(list_comics->sval[0], 0);
         int errors = 0;
         for(unsigned int i = 0; i < fetch_comics->count; i++)
         {
