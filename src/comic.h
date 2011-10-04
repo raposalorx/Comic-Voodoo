@@ -24,7 +24,6 @@ struct Comic
   bool watched;
   std::string current_url;
   unsigned short current_id;
-  unsigned short instance_start_id;
   std::queue<std::string> new_imgs;
   std::queue<std::string> new_urls;
 };

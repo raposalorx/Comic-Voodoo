@@ -118,17 +118,16 @@ Strip* Spider::getImgs(const char* mem, const std::string url) throw(E_ImgFindFa
   }
 
   bool no_previous = false;
-  Strip* last_instance_end_strip;
   try
   {
-    last_instance_end_strip = cache->getStrip(comic.instance_start_id, comic.name);
+    cache->getStrip(current_id, comic.name);
   }
   catch(Cache::E_NoStripFound e)
   {
     no_previous = true;
   }
 
-  if((no_previous || last_imgs=="") || (imgs!=last_instance_end_strip->imgs || imgs!=last_imgs))
+  if(no_previous && ( last_imgs=="" || imgs!=last_imgs))
   { // cut out the duplicate that happens with each respider and duplicates from reading the end_on url
     std::auto_ptr<Strip> strip(new Strip);
     strip->id = current_id;

@@ -171,12 +171,15 @@ int main(int argc, char** argv)
     if(fetch_all->count == 1)
     {
       std::vector<Comic*>* comics = cache->searchComics("", 1);
-      cout << comics->size() << endl;
       for(unsigned int i = 0; i < comics->size(); i++)
       {
         Spider spider(picture_dir, *(comics->at(i)), cache);
         std::vector<Strip*>* fetched_strips = spider.fetchAllStrips();
-        cout << "Fetched " << fetched_strips->size() << " strips of " << comics->at(i)->name << endl;
+        saveStrips(cache, fetched_strips);
+        if(fetched_strips->size()==0)
+          cout << "Nothing new for " << comics->at(i)->name << endl;
+        else
+          cout << "Fetched " << fetched_strips->size() << " new strips of " << comics->at(i)->name << endl;
       }
     }
     else
@@ -197,10 +200,13 @@ int main(int argc, char** argv)
           return 1;
         for(unsigned int i = 0; i < comics.size(); i++)
         {
-          cout << "blah" << endl;
           Spider spider(picture_dir, *(comics.at(i)), cache);
           std::vector<Strip*>* fetched_strips = spider.fetchAllStrips();
-          cout << "Fetched " << fetched_strips->size() << " strips of " << comics.at(i)->name << endl;
+          saveStrips(cache, fetched_strips);
+          if(fetched_strips->size()==0)
+            cout << "Nothing new for " << comics.at(i)->name << endl;
+          else
+            cout << "Fetched " << fetched_strips->size() << " strips of " << comics.at(i)->name << endl;
         }
       }
       else
