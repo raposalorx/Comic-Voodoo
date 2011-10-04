@@ -19,9 +19,9 @@ Spider::EXCEPTION_CTOR(E_ImgWriteFailed, "Could not write the image(s) to disk a
 //  Ctor
 // --------------------------------------------------------------------------------
 
-Spider::Spider(const std::string& picture_dir, Comic& comic, Cache* cache) throw():
+Spider::Spider(const std::string& picture_dir, const Comic& comic, Cache* cache) throw():
   current_id(comic.current_id),
-  current_url(current_url.empty() ? comic.first_url : comic.current_url),
+  current_url(comic.current_url),
   done(false),
   cache(cache),
   comic(comic),
@@ -38,7 +38,14 @@ Spider::Spider(const std::string& picture_dir, Comic& comic, Cache* cache) throw
 
 std::vector<Strip*>* Spider::fetchAllStrips() throw(E_ConnectionFailed, E_ImgFindFailed, E_ImgWriteFailed, Cache::E_CacheDbError)
 {
-  return NULL;
+  std::auto_ptr<std::vector<Strip*> > strips(new std::vector<Strip*>);
+  Strip* swap;
+  while((swap = fetchStrip()) != NULL)
+  {
+    strips->push_back(swap);
+  }
+
+  return strips.release();
 }
 
 Strip* Spider::fetchStrip() throw(E_ConnectionFailed, E_ImgFindFailed, E_ImgWriteFailed, Cache::E_CacheDbError)

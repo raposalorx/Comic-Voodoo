@@ -19,7 +19,7 @@ class Spider
 
   // Ctor
   public:
-    Spider(const std::string&, Comic&, Cache*) throw();
+    Spider(const std::string&, const Comic&, Cache*) throw();
 
   // Spidering
   public:

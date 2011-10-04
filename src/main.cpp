@@ -14,6 +14,7 @@ int main(int argc, char** argv)
   
   std::string env_home = getenv("HOME");
   std::string voodoo_home = env_home + "/.voodoo";
+  std::string picture_dir = voodoo_home + "/pics";
 
   Cache* cache = new Cache(voodoo_home, "cache");
 
@@ -69,6 +70,14 @@ int main(int argc, char** argv)
   void* argsUnwatch[] = {unwatch, unwatch_comic, endunwatch};
   int unwatchErrors;
   unwatchErrors = arg_parse(argc,argv,argsUnwatch);
+
+  struct arg_rex *fetch  = arg_rex1(NULL,NULL,"^fetch",NULL,0,NULL);
+  struct arg_str *fetch_comics = arg_strn(NULL,NULL,"COMIC", 0, 64, "blah");
+  struct arg_lit *fetch_all = arg_lit0("a","all","blah");
+  struct arg_end *endfetch   = arg_end(20);
+  void* argsFetch[] = {fetch, fetch_comics, fetch_all, endfetch};
+  int fetchErrors;
+  fetchErrors = arg_parse(argc,argv,argsFetch);
 
 
   if (help->count > 0 && helpErrors == 0)
@@ -152,6 +161,50 @@ int main(int argc, char** argv)
         comic->watched = false;
         cache->updateComicConfig(*comic);
         cout << "No longer watching " << comic->name << endl;
+      }
+    }
+  }
+  else if (fetchErrors == 0)
+  {
+    if(fetch_all->count == 1)
+    {
+      std::vector<Comic*>* comics = cache->searchComics("", 1);
+      cout << comics->size() << endl;
+      for(unsigned int i = 0; i < comics->size(); i++)
+      {
+        Spider spider(picture_dir, *(comics->at(i)), cache);
+        std::vector<Strip*>* fetched_strips = spider.fetchAllStrips();
+        cout << "Fetched " << fetched_strips->size() << " strips of " << comics->at(i)->name << endl;
+      }
+    }
+    else
+    {
+      if(fetch_comics->count > 0)
+      {
+        std::vector<Comic*> comics;
+        //      comics = cache->searchComics(list_comics->sval[0], 0);
+        int errors = 0;
+        for(unsigned int i = 0; i < fetch_comics->count; i++)
+        {
+          Comic* comic = comicLookup(cache, fetch_comics->sval[i], 1);
+          if(comic != NULL)
+            comics.push_back(comic);
+          else
+            errors++;
+        }
+        if(errors)
+          return 1;
+        for(unsigned int i = 0; i < comics.size(); i++)
+        {
+          cout << "blah" << endl;
+          Spider spider(picture_dir, *(comics.at(i)), cache);
+          std::vector<Strip*>* fetched_strips = spider.fetchAllStrips();
+          cout << "Fetched " << fetched_strips->size() << " strips of " << comics.at(i)->name << endl;
+        }
+      }
+      else
+      {
+        cout << "You must specify at least one comic to fetch, or use --all." << endl;
       }
     }
   }
