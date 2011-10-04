@@ -35,6 +35,8 @@ class Spider
     std::string last_imgs;
     Cache* cache;
 
+    Strip* read_end_url_swap;
+
   // Comic settings
   private:
     Comic comic;

@@ -174,6 +174,7 @@ int main(int argc, char** argv)
       std::vector<Comic*>* comics = cache->searchComics("", 1);
       for(unsigned int i = 0; i < comics->size(); i++)
       {
+        cout << "Fetching " << comics->at(i)->name << "..." << endl;
         Spider spider(picture_dir, *(comics->at(i)), cache);
         std::vector<Strip*>* fetched_strips = spider.fetchAllStrips();
         saveStrips(cache, fetched_strips);
@@ -201,6 +202,7 @@ int main(int argc, char** argv)
           return 1;
         for(unsigned int i = 0; i < comics.size(); i++)
         {
+          cout << "Fetching " << comics.at(i)->name << "..." << endl;
           Spider spider(picture_dir, *(comics.at(i)), cache);
           std::vector<Strip*>* fetched_strips = spider.fetchAllStrips();
           saveStrips(cache, fetched_strips);

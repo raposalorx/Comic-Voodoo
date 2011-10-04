@@ -527,12 +527,12 @@ Strip* Cache::getStrip(int id, const std::string& comic_name) const throw(E_Cach
   { throw E_CacheDbError(cache_db, e.what()); }
 }
 
-void Cache::updateStrip(int id, const std::string& comic_name, const Strip& strip) const throw(E_CacheDbError)
+void Cache::updateStrip(const Strip& strip) const throw(E_CacheDbError)
 {
   try
   {
     SQLite3Db db(cache_db, SQLITE_OPEN_READWRITE);
-    SQLite3Stmt(db, getComicSQLUpdateStr(id, comic_name, strip)).step();
+    SQLite3Stmt(db, getComicSQLUpdateStr(strip.id, strip.comic_name, strip)).step();
   }
   catch (SQLite3Db::E_OpenFailed e)
   { throw E_CacheDbError(cache_db, e.what()); }

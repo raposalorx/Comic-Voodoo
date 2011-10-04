@@ -27,7 +27,8 @@ Spider::Spider(const std::string& picture_dir, const Comic& comic, Cache* cache)
   comic(comic),
   picture_dir(picture_dir + '/' + comic.name),
   img_regex(comic.img_regex),
-  next_regex(comic.next_regex)
+  next_regex(comic.next_regex),
+  read_end_url_swap(NULL)
 {
 }
 
@@ -55,7 +56,16 @@ Strip* Spider::fetchStrip() throw(E_ConnectionFailed, E_ImgFindFailed, E_ImgWrit
   //      - check src/cache.h and src/cache.cpp for examples of how the exception system works in this project
   //      - also check docs/adding_columns for a list of places to update when adding members to struct Comic or struct Strip
   if(done)
+  {
+    if(read_end_url_swap != NULL)
+    {
+      Strip* swap = read_end_url_swap;
+      read_end_url_swap = NULL;
+      swap->id = swap->id+1;
+      return swap;
+    }
     return NULL;
+  }
 
   HTTP page;
   get_http(page, current_url);
@@ -63,7 +73,7 @@ Strip* Spider::fetchStrip() throw(E_ConnectionFailed, E_ImgFindFailed, E_ImgWrit
   {
     Strip* strip = getImgs(page.mem, current_url);
     std::string next = getNext(page.mem, current_url);
-    std::cout << "next: " << next << std::endl;
+//    std::cout << "next: " << next << std::endl;
     if(next != "")
     {
       current_url = next;
@@ -72,6 +82,9 @@ Strip* Spider::fetchStrip() throw(E_ConnectionFailed, E_ImgFindFailed, E_ImgWrit
     else
     {
       done = true;
+      if(comic.read_end_url)
+      {
+      }
     }
     return strip;
   }
@@ -118,16 +131,17 @@ Strip* Spider::getImgs(const char* mem, const std::string url) throw(E_ImgFindFa
   }
 
   bool no_previous = false;
+  Strip* previous;
   try
   {
-    cache->getStrip(current_id, comic.name);
+    previous = cache->getStrip(current_id, comic.name);
   }
   catch(Cache::E_NoStripFound e)
   {
     no_previous = true;
   }
 
-  if(no_previous && ( last_imgs=="" || imgs!=last_imgs))
+  if(last_imgs=="" || imgs!=last_imgs)//no_previous || ((last_imgs=="" || imgs!=last_imgs) && imgs!=previous->imgs))
   { // cut out the duplicate that happens with each respider and duplicates from reading the end_on url
     std::auto_ptr<Strip> strip(new Strip);
     strip->id = current_id;
@@ -220,7 +234,7 @@ std::string Spider::getNext(char* mem, std::string url) throw()
           return "";
 
         // img on end_on_url
-        getImgs(page.mem, url);
+        read_end_url_swap = getImgs(page.mem, url);
 
         // keep the url before end_on_url
         current_url = url_swap;

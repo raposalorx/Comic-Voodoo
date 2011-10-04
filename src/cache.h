@@ -48,7 +48,7 @@ class Cache
     void addStrip(const Strip&) const throw(E_CacheDbError);
     void remStrip(int, const std::string&) const throw(E_CacheDbError);
     Strip* getStrip(int, const std::string&) const throw(E_CacheDbError, E_NoStripFound);
-    void updateStrip(int, const std::string&, const Strip&) const throw(E_CacheDbError);
+    void updateStrip(const Strip&) const throw(E_CacheDbError);
 };
 
 #endif // CACHE_H
