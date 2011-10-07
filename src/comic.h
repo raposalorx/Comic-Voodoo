@@ -14,6 +14,7 @@ struct Comic
   std::string end_on_url;
   bool read_end_url;
   bool download_imgs;
+  std::string searchpattern;
 
   // Regex
   std::string img_regex;

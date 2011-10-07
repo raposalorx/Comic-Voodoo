@@ -111,6 +111,13 @@ int importYaml(Cache* cache, struct arg_file* import_comics)
             *pName >> comic.download_imgs;
           else
             comic.download_imgs = 0;
+          if(const YAML::Node *pName = doc.FindValue("searchpattern"))
+            *pName >> comic.searchpattern;
+          else
+          {
+            cout << "You need a searchpattern " << import_comics->filename[i] << endl;
+            return 1;
+          }
 
           try
           {
@@ -188,6 +195,8 @@ int exportYaml(Cache* cache, struct arg_str* xport_comics)
           out << YAML::Value << xport_comic->read_end_url;
           out << YAML::Key << "download_imgs";
           out << YAML::Value << xport_comic->download_imgs;
+          out << YAML::Key << "searchpattern";
+          out << YAML::Value << xport_comic->searchpattern;
           out << YAML::EndMap;
 
           const char* settingsFile = std::string(xport_comic->name + ".yaml").c_str();
