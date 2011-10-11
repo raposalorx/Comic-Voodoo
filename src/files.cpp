@@ -123,7 +123,7 @@ int importYaml(Cache* cache, struct arg_file* import_comics)
           {
             if(!cache->hasComic(comic.name))
             {
-              comic.mark = 0;
+              comic.mark = -1;
               comic.current_url = comic.first_url;
               comic.current_id = 0;
               comic.watched = 0;

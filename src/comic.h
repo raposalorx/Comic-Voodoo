@@ -21,7 +21,7 @@ struct Comic
   std::string next_regex;
 
   // Spider state data
-  unsigned short mark;
+  signed short mark;
   bool watched;
   std::string current_url;
   unsigned short current_id;

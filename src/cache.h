@@ -49,6 +49,7 @@ class Cache
     void remStrip(int, const std::string&) const throw(E_CacheDbError);
     Strip* getStrip(int, const std::string&) const throw(E_CacheDbError, E_NoStripFound);
     void updateStrip(const Strip&) const throw(E_CacheDbError);
+    std::vector<Strip*>* searchStrips(const Comic&, const std::string&);
 
   // Config
   public:

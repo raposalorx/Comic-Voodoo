@@ -87,6 +87,14 @@ int main(int argc, char** argv)
   int setErrors;
   setErrors = arg_parse(argc,argv,argsSet);
 
+  struct arg_rex *mark  = arg_rex1(NULL,NULL,"^mark",NULL,0,NULL);
+  struct arg_str *mark_comic = arg_str1(NULL,NULL,"COMIC", "Option to set.");
+  struct arg_str *mark_query = arg_str0(NULL,NULL,"QUERY", "Option to set.");
+  struct arg_end *endmark   = arg_end(20);
+  void* argsMark[] = {mark, mark_comic, mark_query, endmark};
+  int markErrors;
+  markErrors = arg_parse(argc,argv,argsMark);
+
 
   if (help->count > 0 && helpErrors == 0)
   {
@@ -100,7 +108,7 @@ int main(int argc, char** argv)
     arg_print_syntax(stdout,argsFetch,"\n");
     arg_print_syntax(stdout,argsSet,"\n");
     arg_print_syntax(stdout,argsHelp,"\n");
-    
+
     cout << "\nDescriptions:" << endl;
     cout << "  import" << setw(13) << "" << "Import a comic from a yaml file.\n";
     arg_print_glossary(stdout,argsImport,"    %-16s %s\n");
@@ -249,6 +257,48 @@ int main(int argc, char** argv)
       }
     }
   }
+  else if (mark->count == 1 && markErrors == 0)
+  {
+    Comic* comic = comicLookup(cache, mark_comic->sval[0], 1);
+    if(comic!=NULL)
+    {
+      if(mark_query->count == 1)
+      {
+        std::vector<Strip*>* strips = cache->searchStrips(*comic,mark_query->sval[0]);
+        if(strips->size()==0)
+        {
+          cout << "No strip was found with that query" << endl;
+        }
+        else if(strips->size()>1)
+        {
+          cout << "Ambiguous query, please search so that only one remains:\n";
+          for(signed int i = 0; i<strips->size();i++)
+          {
+            cout << strips->at(i)->page << "\n";
+          }
+          cout << endl;
+        }
+        else
+        {
+          comic->mark = strips->at(0)->id;
+          cache->updateComicConfig(*comic);
+          cout << "Set " << comic->name << "'s mark to " << strips->at(0)->page << endl;
+        }
+      }
+      else
+      {
+        if(comic->mark == -1)
+        {
+          cout << comic->name << "'s mark is unset." << endl;
+        }
+        else
+        {
+          Strip* strip = cache->getStrip(comic->mark, comic->name);
+          cout << comic->name << " is marked at " << strip->page << endl;
+        }
+      }
+    }
+  }
 
   /* special case: '--version' takes precedence error reporting */
   /*	else if (vers->count > 0)
@@ -264,6 +314,8 @@ int main(int argc, char** argv)
   arg_freetable(argsHelp,sizeof(argsHelp)/sizeof(argsHelp[0]));
   arg_freetable(argsWatch,sizeof(argsWatch)/sizeof(argsWatch[0]));
   arg_freetable(argsUnwatch,sizeof(argsUnwatch)/sizeof(argsUnwatch[0]));
+  arg_freetable(argsSet,sizeof(argsSet)/sizeof(argsSet[0]));
+  arg_freetable(argsMark,sizeof(argsMark)/sizeof(argsMark[0]));
 
   delete cache;
 

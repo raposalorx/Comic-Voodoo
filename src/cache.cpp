@@ -217,7 +217,7 @@ std::string getConfigSQLSelectStr(const std::string& comic_name) throw()
            "`mark`,"
            "`current_url`,"
            "`current_id`,"
-           "`watched`"
+           "`watched`,"
            "`searchpattern`"
            " FROM `" COMIC_TABLE "` "
          "WHERE `name`='" + escape(comic_name) + "';";
@@ -553,6 +553,30 @@ void Cache::updateStrip(const Strip& strip) const throw(E_CacheDbError)
   { throw E_CacheDbError(cache_db, e.what()); }
   catch (SQLite3Stmt::E_StepFailed e)
   { throw E_CacheDbError(cache_db, e.what()); }
+}
+
+std::vector<Strip*>* Cache::searchStrips(const Comic& comic, const std::string& pattern)
+{
+  std::auto_ptr<std::vector<Strip*> > strips(new std::vector<Strip*>);
+  std::vector<int> ids;
+  {
+    SQLite3Db db(cache_db, SQLITE_OPEN_READONLY);
+    SQLite3Stmt stmt(db, "SELECT `id` FROM `" STRIP_TABLE "` WHERE `page` LIKE '" + escape(comic.searchpattern) + escape(pattern) + "%';");
+    if (!stmt.step())
+      return strips.release();
+
+    for(int i = 0;i < sqlite3_column_count(stmt);i++)
+    {
+      ids.push_back(sqlite3_column_int(stmt, 0));
+      if (!stmt.step())
+        break;
+    }
+  }
+  for(int i = 0;i < ids.size();i++)
+  {
+    strips->push_back(getStrip(ids[i], comic.name));
+  }
+  return strips.release();
 }
 
 // --------------------------------------------------------------------------------
