@@ -1,5 +1,6 @@
 #include "cache.h"
 
+#include <stdio.h>
 #include <memory>
 #include <sstream>
 #include <sqlite3.h>
@@ -561,7 +562,16 @@ std::vector<Strip*>* Cache::searchStrips(const Comic& comic, const std::string& 
   std::vector<int> ids;
   {
     SQLite3Db db(cache_db, SQLITE_OPEN_READONLY);
-    SQLite3Stmt stmt(db, "SELECT `id` FROM `" STRIP_TABLE "` WHERE `page` LIKE '" + escape(comic.searchpattern) + escape(pattern) + "%';");
+    std::string query;
+    if(pattern.substr(0, comic.searchpattern.size()) == comic.searchpattern)
+    {
+      query = escape(pattern);
+    }
+    else
+    {
+      query = escape(comic.searchpattern) + escape(pattern) + "%";
+    }
+    SQLite3Stmt stmt(db, "SELECT `id` FROM `" STRIP_TABLE "` WHERE `page` LIKE '" + query + "';");
     if (!stmt.step())
       return strips.release();
 

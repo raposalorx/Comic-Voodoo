@@ -88,10 +88,11 @@ int main(int argc, char** argv)
   setErrors = arg_parse(argc,argv,argsSet);
 
   struct arg_rex *mark  = arg_rex1(NULL,NULL,"^mark",NULL,0,NULL);
-  struct arg_str *mark_comic = arg_str1(NULL,NULL,"COMIC", "Option to set.");
-  struct arg_str *mark_query = arg_str0(NULL,NULL,"QUERY", "Option to set.");
+  struct arg_str *mark_comic = arg_str1(NULL,NULL,"COMIC", "Comic to bookmark.");
+  struct arg_lit *mark_newest = arg_lit0("n","newest","Mark the newest comic.");
+  struct arg_str *mark_query = arg_str0(NULL,NULL,"QUERY", "URL or comic number/date to mark.");
   struct arg_end *endmark   = arg_end(20);
-  void* argsMark[] = {mark, mark_comic, mark_query, endmark};
+  void* argsMark[] = {mark, mark_comic, mark_newest, mark_query, endmark};
   int markErrors;
   markErrors = arg_parse(argc,argv,argsMark);
 
@@ -262,7 +263,17 @@ int main(int argc, char** argv)
     Comic* comic = comicLookup(cache, mark_comic->sval[0], 1);
     if(comic!=NULL)
     {
-      if(mark_query->count == 1)
+      if(mark_newest->count == 1)
+      {
+        int newest_id = comic->current_id;
+        if(comic->read_end_url)
+          newest_id++;
+        comic->mark = newest_id;
+        cache->updateComicConfig(*comic);
+        Strip* strip = cache->getStrip(newest_id, comic->name);
+        cout << "Set " << comic->name << "'s mark to " << strip->page << endl;
+      }
+      else if(mark_query->count == 1)
       {
         std::vector<Strip*>* strips = cache->searchStrips(*comic,mark_query->sval[0]);
         if(strips->size()==0)
