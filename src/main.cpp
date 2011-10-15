@@ -89,12 +89,22 @@ int main(int argc, char** argv)
 
   struct arg_rex *mark  = arg_rex1(NULL,NULL,"^mark",NULL,0,NULL);
   struct arg_str *mark_comic = arg_str1(NULL,NULL,"COMIC", "Comic to bookmark.");
-  struct arg_lit *mark_newest = arg_lit0("n","newest","Mark the newest comic.");
-  struct arg_str *mark_query = arg_str0(NULL,NULL,"QUERY", "URL or comic number/date to mark.");
+  struct arg_lit *mark_newest = arg_lit0("n","newest","Mark the newest strip.");
+  struct arg_str *mark_query = arg_str0(NULL,NULL,"QUERY", "URL or strip number/date to mark.");
   struct arg_end *endmark   = arg_end(20);
   void* argsMark[] = {mark, mark_comic, mark_newest, mark_query, endmark};
   int markErrors;
   markErrors = arg_parse(argc,argv,argsMark);
+
+  struct arg_rex *read  = arg_rex1(NULL,NULL,"^read",NULL,0,NULL);
+  struct arg_str *read_comic = arg_str1(NULL,NULL,"COMIC", "Comic to read.");
+  struct arg_lit *read_newest = arg_lit0("n","newest","Read the newest strip.");
+  struct arg_lit *read_mark = arg_lit0("m","mark","Read the bookmarked strip.");
+  struct arg_str *read_query = arg_str0(NULL,NULL,"QUERY", "URL or strip number/date to read.");
+  struct arg_end *endread   = arg_end(20);
+  void* argsRead[] = {read, read_comic, read_newest, read_mark, read_query, endread};
+  int readErrors;
+  readErrors = arg_parse(argc,argv,argsRead);
 
 
   if (help->count > 0 && helpErrors == 0)
@@ -108,6 +118,8 @@ int main(int argc, char** argv)
     arg_print_syntax(stdout,argsUnwatch,"\n");
     arg_print_syntax(stdout,argsFetch,"\n");
     arg_print_syntax(stdout,argsSet,"\n");
+    arg_print_syntax(stdout,argsMark,"\n");
+    arg_print_syntax(stdout,argsRead,"\n");
     arg_print_syntax(stdout,argsHelp,"\n");
 
     cout << "\nDescriptions:" << endl;
@@ -125,6 +137,10 @@ int main(int argc, char** argv)
     arg_print_glossary(stdout,argsFetch,"    %-16s %s\n");
     cout << "  set" << setw(16) << "" << "Set global options." << "\n";
     arg_print_glossary(stdout,argsSet,"    %-16s %s\n");
+    cout << "  mark" << setw(15) << "" << "Bookmark a strip." << "\n";
+    arg_print_glossary(stdout,argsMark,"    %-16s %s\n");
+    cout << "  read" << setw(15) << "" << "Read a strip in your favorite browser." << "\n";
+    arg_print_glossary(stdout,argsRead,"    %-16s %s\n");
     cout << "  help" << setw(15) << "" << "Show this help dialog." << "\n";
     arg_print_glossary(stdout,argsHelp,"    %-16s %s\n");
     cout << endl;
@@ -310,6 +326,55 @@ int main(int argc, char** argv)
       }
     }
   }
+  else if (read->count == 1 && readErrors == 0)
+  {
+    Comic* comic = comicLookup(cache, read_comic->sval[0], 1);
+    std::string browser = cache->getOption("browser");
+    Strip* strip = NULL;
+    if(browser == "")
+    {
+      cout << "Please set a web browser to use\nExample: voodoo set browser firefox" << endl;
+    }
+    if(comic!=NULL && browser != "")
+    {
+      if(read_mark->count == 1)
+      {
+        strip = cache->getStrip(comic->mark, comic->name);
+      }
+      else if(read_newest->count == 1)
+      {
+        int newest_id = comic->current_id;
+        if(comic->read_end_url)
+          newest_id++;
+        strip = cache->getStrip(newest_id, comic->name);
+      }
+      else if(read_query->count == 1)
+      {
+        std::vector<Strip*>* strips = cache->searchStrips(*comic,read_query->sval[0]);
+        if(strips->size()==0)
+        {
+          cout << "No strip was found with that query" << endl;
+        }
+        else if(strips->size()>1)
+        {
+          cout << "Ambiguous query, please search so that only one remains:\n";
+          for(signed int i = 0; i<strips->size();i++)
+          {
+            cout << strips->at(i)->page << "\n";
+          }
+          cout << endl;
+        }
+        else
+        {
+          strip = strips->at(0);
+        }
+      }
+      if(strip != NULL)
+      {
+        system(std::string(browser + " " + strip->page).c_str());
+      }
+    }
+  }
 
   /* special case: '--version' takes precedence error reporting */
   /*	else if (vers->count > 0)
@@ -327,6 +392,7 @@ int main(int argc, char** argv)
   arg_freetable(argsUnwatch,sizeof(argsUnwatch)/sizeof(argsUnwatch[0]));
   arg_freetable(argsSet,sizeof(argsSet)/sizeof(argsSet[0]));
   arg_freetable(argsMark,sizeof(argsMark)/sizeof(argsMark[0]));
+  arg_freetable(argsRead,sizeof(argsRead)/sizeof(argsRead[0]));
 
   delete cache;
 
