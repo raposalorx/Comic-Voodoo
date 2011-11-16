@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <memory>
+#include <unistd.h>
 
 #include "strip.h"
 
@@ -44,7 +45,10 @@ std::vector<Strip*>* Spider::fetchAllStrips() throw(E_ConnectionFailed, E_ImgFin
   while((swap = fetchStrip()) != NULL)
   {
     strips->push_back(swap);
+//    usleep(1000*20); // 20 ms
+    std::cout << "." << std::flush;
   }
+  std::cout << std::endl;
 
   return strips.release();
 }
@@ -69,6 +73,24 @@ Strip* Spider::fetchStrip() throw(E_ConnectionFailed, E_ImgFindFailed, E_ImgWrit
 
   HTTP page;
   get_http(page, current_url);
+  
+  if(page.size == 0)
+  {
+    int reconns = 0;
+    while(page.size == 0)
+    {
+      reconns++;
+      if(reconns > 3)
+      {
+        std::cout << "\nCouldn't reconnect." << std::endl;
+        return NULL;
+      }
+      std::cout << "\nAttempting to reconnect (Don't worry, it's still fetching stuff)." << std::endl;
+      usleep(1000*5*1000); // 5 s
+      get_http(page, current_url);
+    }
+  }
+
   if(page.mem != NULL)
   {
     Strip* strip = getImgs(page.mem, current_url);

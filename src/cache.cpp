@@ -575,7 +575,7 @@ std::vector<Strip*>* Cache::searchStrips(const Comic& comic, const std::string& 
     if (!stmt.step())
       return strips.release();
 
-    for(int i = 0;i < sqlite3_column_count(stmt);i++)
+    for(;;)
     {
       ids.push_back(sqlite3_column_int(stmt, 0));
       if (!stmt.step())

@@ -53,6 +53,41 @@ void get_http(HTTP& page, const std::string& url)
 
   curl_easy_perform(curl_handle);
 
+  long error = 0;
+  CURLcode status = curl_easy_getinfo(curl_handle, CURLINFO_OS_ERRNO, &error);
+  if(error != 0)
+  {
+    page.size = 0;
+  }
+  if(CURLE_OK != status)
+  {
+    page.size = 0;
+  }
+  if(CURLE_COULDNT_CONNECT == status)
+  {
+    page.size = 0;
+  }
+  if(CURLE_PARTIAL_FILE == status)
+  {
+    page.size = 0;
+  }
+  if(CURLE_OPERATION_TIMEDOUT == status)
+  {
+    page.size = 0;
+  }
+  if(CURLE_ABORTED_BY_CALLBACK == status)
+  {
+    page.size = 0;
+  }
+  if(CURLE_GOT_NOTHING == status)
+  {
+    page.size = 0;
+  }
+  if(CURLE_RECV_ERROR == status)
+  {
+    page.size = 0;
+  }
+
   curl_easy_cleanup(curl_handle);
   curl_global_cleanup();
 }
