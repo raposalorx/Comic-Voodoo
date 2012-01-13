@@ -18,7 +18,7 @@ main = comicvoodoo
 srcdir = ./src
 cxxflags ?= -W -Wall -Wextra -ansi -g
 ldflags ?=
-libs ?= -lcurl -lpcrecpp -lyaml-cpp -largtable2 -lsqlite3 -lboost_filesystem
+libs ?= -lcurl -lpcrecpp -lyaml-cpp -largtable2 -lsqlite3 -lboost_filesystem -lboost_system
 includes ?=
 source := ${shell find ${srcdir} -name *.cpp}
 objects := ${source:.cpp=.o}

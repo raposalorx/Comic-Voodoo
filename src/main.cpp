@@ -369,6 +369,10 @@ int main(int argc, char** argv)
           strip = strips->at(0);
         }
       }
+      else
+      {
+        strip = cache->getStrip(comic->mark, comic->name);
+      }
       if(strip != NULL)
       {
         system(std::string(browser + " " + strip->page).c_str());
